@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTRA SECTOR — 2D Space Combat & Fleet Hangar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- CRT Scanline & Cosmic Glow Overlay -->
+        <div class="crt-overlay"></div>
+        <div class="nebula-bg-glow"></div>
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Top Navigation / Command HUD -->
+        <header id="hud-top">
+            <div class="brand">
+                <div class="logo-icon">🚀</div>
+                <div class="brand-text">
+                    <span class="title">ASTRA SECTOR</span>
+                    <span class="subtitle">SPACE COMBAT v4.0</span>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <!-- Hull Health -->
+                <div class="stat-box">
+                    <span class="label">HULL HEALTH</span>
+                    <div class="meter-bar health-bar">
+                        <div id="health-fill" class="meter-fill" style="width: 100%;"></div>
+                    </div>
+                    <span id="health-text" class="value">100 / 100</span>
+                </div>
+
+                <!-- Energy Shield -->
+                <div class="stat-box">
+                    <span class="label">FORCE SHIELD</span>
+                    <div class="meter-bar shield-bar">
+                        <div id="shield-fill" class="meter-fill" style="width: 100%;"></div>
+                    </div>
+                    <span id="shield-text" class="value">50 / 50</span>
+                </div>
+
+                <!-- Currency -->
+                <div class="stat-box score-box">
+                    <span class="label">STARLIGHT ORE</span>
+                    <span id="score-text" class="value highlight">🪙 0</span>
+                </div>
+
+                <!-- Level / Objective -->
+                <div class="stat-box wave-box">
+                    <span class="label" id="sector-label">CURRENT SECTOR</span>
+                    <span id="wave-text" class="value">LEVEL 1</span>
+                </div>
+            </div>
+
+            <div class="hud-controls">
+                <a href="../../index.html" class="hud-btn" style="text-decoration: none;" title="Back to Arcade Command Hub">
+                    <span class="icon">⚓</span> ARCADE HUB
+                </a>
+                <button id="btn-audio" class="hud-btn btn-toggle-audio" title="Toggle Sound On/Off">
+                    <span class="icon">🔊</span> <span class="audio-label">SOUND: ON</span>
+                </button>
+                <button id="btn-map" class="hud-btn" title="Sector Level Map">
+                    <span class="icon">🗺️</span> SECTORS
+                </button>
+                <button id="btn-upgrades" class="hud-btn highlight-btn" title="Open Hangar Upgrades & Ships">
+                    <span class="icon">🚀</span> HANGAR
+                </button>
+                <button id="btn-pause" class="hud-btn" title="Pause Game">
+                    <span class="icon">⏸</span> PAUSE
+                </button>
+            </div>
+        </header>
+
+        <!-- Boss Health Bar Overlay (Displayed during Boss levels) -->
+        <div id="boss-hud" class="boss-hud hidden">
+            <div class="boss-title">
+                <span id="boss-name">VOID DREADNOUGHT LEVIATHAN</span>
+            </div>
+            <div class="boss-bar-outer">
+                <div id="boss-health-fill" class="boss-bar-fill" style="width: 100%;"></div>
+            </div>
+            <span id="boss-health-text" class="boss-hp-text">1000 / 1000 HP</span>
+        </div>
+
+        <!-- Level Objective Tracker HUD -->
+        <div id="objective-tracker" class="objective-tracker">
+            <span class="obj-icon">🎯</span>
+            <span id="obj-text" class="obj-text">TARGET: Destroy 8 Enemy Ships</span>
+        </div>
+
+        <!-- Tactical Mini Radar Screen (Top Right) -->
+        <div id="radar-container">
+            <div class="radar-sweep"></div>
+            <div class="radar-grid"></div>
+            <canvas id="radarCanvas" width="120" height="120"></canvas>
+            <span class="radar-label">TACTICAL RADAR</span>
+        </div>
+
+        <!-- Special Ability & Weapon HUD (Bottom Center) -->
+        <div id="abilities-hud">
+            <div class="ability-card" id="ability-primary">
+                <span class="key-bind">L-CLICK / SPACE</span>
+                <div class="ability-icon">⚡</div>
+                <div class="ability-info">
+                    <span class="name" id="ship-weapon-name">PLASMA CANNON</span>
+                    <span class="sub">Primary Weapon</span>
+                </div>
+            </div>
+
+            <div class="ability-card" id="ability-special">
+                <span class="key-bind">R-CLICK / SHIFT / E</span>
+                <div class="ability-icon" id="special-icon">🚀</div>
+                <div class="ability-info">
+                    <span class="name" id="special-name">PHOTON TORPEDO</span>
+                    <span class="sub" id="special-sub">Heavy Area Blast</span>
+                </div>
+                <div class="cooldown-overlay" id="special-cd-overlay"><span id="special-cd-text" class="cd-text">READY</span></div>
+            </div>
+        </div>
+
+        <!-- Floating Terminal / Combat Feed (Bottom Left) -->
+        <div id="terminal-overlay">
+            <div class="terminal-header">
+                <span class="dot"></span> COMBAT TELEMETRY LOG
+            </div>
+            <div id="terminal-output" class="terminal-body">
+                <p class="log-line sys">[SYSTEM] Space Combat Avionics Initialized.</p>
+                <p class="log-line sys">[SYSTEM] Weapons Armed. Shields Active.</p>
+            </div>
+        </div>
+
+        <!-- START MENU OVERLAY -->
+        <div id="start-overlay" class="modal-overlay active">
+            <div class="start-box glass-panel">
+                <div class="hero-header">
+                    <div class="cyber-badge">DEEP SPACE TACTICAL COMBAT</div>
+                    <h1 class="hero-title">ASTRA SECTOR</h1>
+                    <p class="hero-subtitle">Engage hostile Void armadas, clear sectors, upgrade your ship, and defeat colossal Dreadnought bosses!</p>
+                </div>
+
+                <div class="controls-guide">
+                    <h3>🎮 PILOT COMMAND CONTROLS</h3>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>▲</kbd><kbd>◀</kbd><kbd>▼</kbd><kbd>▶</kbd>
+                            <span>Thrust & Vector Movement</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>MOUSE AIM</kbd>
+                            <span>360° Ship Rotation</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>LEFT CLICK</kbd> / <kbd>SPACE</kbd>
+                            <span>Primary Weapons Fire</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>RIGHT CLICK</kbd> / <kbd>SHIFT</kbd> / <kbd>E</kbd>
+                            <span>Ship Special Ability</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="start-actions">
+                    <button id="btn-start-game" class="btn-primary-large">
+                        🚀 LAUNCH MISSION
+                    </button>
+                    <button id="btn-open-map" class="btn-secondary-large">
+                        🗺️ SECTOR MAP (LEVEL SELECT)
+                    </button>
+                    <button id="btn-start-hangar" class="btn-accent-large">
+                        🛠️ HANGAR & SHIP SHOP
+                    </button>
+                    <a href="../../index.html" class="btn-secondary-large" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        ⚓ ARCADE COMMAND HUB
+                    </a>
+                    <button id="btn-start-audio" class="btn-secondary-large btn-toggle-audio">
+                        <span class="icon">🔊</span> <span class="audio-label">SOUND: ON</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTOR LEVEL SELECTOR MODAL -->
+        <div id="map-modal" class="modal-overlay hidden">
+            <div class="modal-window glass-panel wide-modal">
+                <div class="modal-header">
+                    <h2>🗺️ SECTOR PROGRESSION MAP</h2>
+                    <button class="btn-close" id="btn-close-map">✖</button>
+                </div>
+
+                <div class="sector-map-container">
+                    <div class="sector-nodes-grid" id="sector-nodes-container">
+                        <!-- Dynamically populated level nodes (Level 1 to 15) -->
+                    </div>
+
+                    <div class="sector-details-pane" id="sector-details-pane">
+                        <h3 id="sel-level-title">LEVEL 1: OUTER ASTEROID RIM</h3>
+                        <div id="sel-level-badge" class="level-badge normal">NORMAL SECTOR</div>
+                        <p id="sel-level-desc">Clear out rogue Void Scout drones patrolling the outer rim.</p>
+                        <div class="level-meta">
+                            <div class="meta-item">Enemies: <strong id="sel-level-enemies">8</strong></div>
+                            <div class="meta-item">Boss Present: <strong id="sel-level-boss">NO</strong></div>
+                            <div class="meta-item">Reward Bonus: <strong id="sel-level-reward" class="gold-text">+150 Ore</strong></div>
+                        </div>
+                        <button id="btn-launch-selected-level" class="btn-primary-large" style="margin-top: 15px; width: 100%;">
+                            🚀 START LEVEL 1
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HANGAR & SHIP SHOP MODAL -->
+        <div id="hangar-modal" class="modal-overlay hidden">
+            <div class="modal-window glass-panel extra-wide-modal">
+                <div class="modal-header">
+                    <h2>🛠️ FLEET HANGAR & SHIP SHOP</h2>
+                    <div class="hangar-currency">
+                        CREDITS: <strong id="hangar-credits-display" class="gold-text">🪙 0 ORE</strong>
+                    </div>
+                    <button class="btn-close" id="btn-close-hangar">✖</button>
+                </div>
+
+                <!-- Hangar Navigation Tabs -->
+                <div class="hangar-tabs">
+                    <button id="tab-btn-ships" class="tab-btn active">🚀 BUY & EQUIP SHIPS</button>
+                    <button id="tab-btn-upgrades" class="tab-btn">⚙️ SHIP STAT UPGRADES</button>
+                </div>
+
+                <!-- Tab 1: Buyable Ships -->
+                <div id="tab-ships-content" class="tab-content active">
+                    <div class="ships-grid" id="ships-grid-container">
+                        <!-- Dynamically rendered ship cards -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Stat Upgrades -->
+                <div id="tab-upgrades-content" class="tab-content hidden">
+                    <div class="upgrades-grid" id="upgrades-grid-container">
+                        <!-- Dynamically rendered stat upgrade cards -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL VICTORY OVERLAY ("SECTOR CLEARED!") -->
+        <div id="victory-modal" class="modal-overlay hidden">
+            <div class="modal-window glass-panel victory-box">
+                <div class="victory-header">
+                    <div class="victory-icon">🏆</div>
+                    <h2 class="victory-title">SECTOR CLEARED!</h2>
+                    <p id="victory-level-name">LEVEL 1 COMPLETED</p>
+                </div>
+
+                <div class="victory-stats">
+                    <div class="vic-stat-card">
+                        <span class="label">ENEMIES DESTROYED</span>
+                        <span id="vic-kills" class="value">12</span>
+                    </div>
+                    <div class="vic-stat-card">
+                        <span class="label">CURRENCY EARNED</span>
+                        <span id="vic-ore" class="value gold-text">+350 ORE</span>
+                    </div>
+                    <div class="vic-stat-card">
+                        <span class="label">NEXT LEVEL UNLOCKED</span>
+                        <span id="vic-next-lvl" class="value cyan-text">LEVEL 2</span>
+                    </div>
+                </div>
+
+                <div class="victory-actions">
+                    <button id="btn-next-level" class="btn-primary-large">
+                        🚀 CONTINUE TO NEXT LEVEL
+                    </button>
+                    <button id="btn-victory-hangar" class="btn-accent-large">
+                        🛠️ GO TO HANGAR SHOP
+                    </button>
+                    <button id="btn-victory-map" class="btn-secondary-large">
+                        🗺️ SECTOR MAP
+                    </button>
+                    <a href="../../index.html" class="btn-secondary-large" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        ⚓ ARCADE HUB
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER OVERLAY -->
+        <div id="gameover-overlay" class="modal-overlay hidden">
+            <div class="modal-window glass-panel danger-box">
+                <div class="danger-header">
+                    <div class="danger-icon">💥</div>
+                    <h2>HULL BREACHED — SHIP DESTROYED</h2>
+                    <p>Your flagship was vaporized in high-intensity space combat.</p>
+                </div>
+
+                <div class="gameover-summary">
+                    <div class="vic-stat-card">
+                        <span class="label">TOTAL SCORE</span>
+                        <span id="res-score" class="value">000,000</span>
+                    </div>
+                    <div class="vic-stat-card">
+                        <span class="label">KILLS</span>
+                        <span id="res-kills" class="value">0</span>
+                    </div>
+                    <div class="vic-stat-card">
+                        <span class="label">ORE RETAINED</span>
+                        <span id="res-credits" class="value gold-text">+0 ORE</span>
+                    </div>
+                </div>
+
+                <div class="victory-actions">
+                    <button id="btn-restart" class="btn-primary-large">
+                        🔄 RETRY LEVEL
+                    </button>
+                    <button id="btn-go-upgrades" class="btn-accent-large">
+                        🛠️ UPGRADE AT HANGAR
+                    </button>
+                    <button id="btn-go-map" class="btn-secondary-large">
+                        🗺️ SECTOR MAP
+                    </button>
+                    <a href="../../index.html" class="btn-secondary-large" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        ⚓ ARCADE HUB
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAUSE OVERLAY -->
+        <div id="pause-overlay" class="modal-overlay hidden">
+            <div class="modal-window glass-panel">
+                <h2>⏸ MISSION SUSPENDED</h2>
+                <p>Tactical operations paused.</p>
+                <div class="victory-actions" style="margin-top: 25px;">
+                    <button id="btn-resume" class="btn-primary-large">
+                        ▶ RESUME COMBAT
+                    </button>
+                    <button id="btn-pause-hangar" class="btn-accent-large">
+                        🛠️ HANGAR UPGRADES
+                    </button>
+                    <button id="btn-pause-map" class="btn-secondary-large">
+                        🗺️ SECTOR MAP
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
