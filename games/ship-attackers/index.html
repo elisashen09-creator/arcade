@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHIP ATTACKERS — Naval Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="crt-radar-overlay"></div>
+
+    <div class="game-wrapper">
+        <!-- Top Navigation Bar -->
+        <header class="game-header">
+            <div class="header-left">
+                <a href="../../index.html" class="btn-back">
+                    ◀ BACK TO ARCADE
+                </a>
+                <h1 class="game-title">SHIP ATTACKERS</h1>
+            </div>
+
+            <div class="header-right" style="display: flex; align-items: center; gap: 15px;">
+                <div class="coin-badge">
+                    <span class="coin-icon">🪙</span>
+                    <span id="header-coins" class="coin-amount">0</span>
+                </div>
+                <div class="user-badge">
+                    <span class="badge-icon">⚓</span>
+                    <span id="user-name" class="username">Cadet_Guest</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Title / Instructions Screen -->
+        <div id="title-screen" class="screen-card active">
+            <div class="title-hero">
+                <h2>SHIP ATTACKERS 2D</h2>
+                <p class="subtitle">TOP-DOWN RETRO NAVAL AA DEFENSE</p>
+            </div>
+
+            <div class="instructions-box">
+                <h3>📜 HOW TO PLAY & FLEET GARAGE</h3>
+                <ul>
+                    <li><strong>Warship Controls:</strong> Use <strong>A / D</strong> or <strong>Left / Right Arrow Keys</strong> to steer your Warship horizontally across the sea base.</li>
+                    <li><strong>AA Cannon Fire:</strong> Press <strong>SPACEBAR</strong> or <strong>Left Click</strong> to launch anti-aircraft cannon fire at incoming enemy bomber formations.</li>
+                    <li><strong>Coins & Enemy Values:</strong> Destroying enemy ships earns coins (Scout: 15🪙, Bomber: 25🪙, Gunship: 40🪙, Mothership: 250🪙).</li>
+                    <li><strong>Naval Garage & Upgrades:</strong> Spend coins in the Garage to upgrade your fire rate, damage, speed, max lives, or unlock new Warships with unique combat abilities!</li>
+                </ul>
+            </div>
+
+            <div class="action-buttons" style="display: flex; gap: 15px; justify-content: center;">
+                <button id="btn-start-game" class="btn-primary">
+                    🚀 START DEFENSE (PLAY)
+                </button>
+                <button id="btn-open-garage" class="btn-garage">
+                    🛠️ NAVAL GARAGE & SHOP
+                </button>
+            </div>
+        </div>
+
+        <!-- Gameplay Canvas View -->
+        <div id="gameplay-screen" class="screen-card hidden">
+            <!-- HUD Stats Bar -->
+            <div class="hud-bar">
+                <div class="hud-stat">
+                    <span class="label">SCORE</span>
+                    <span id="hud-score" class="value">000,000</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="label">COINS EARNED</span>
+                    <span id="hud-coins" class="value" style="color: var(--amber-gold);">🪙 0</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="label">WAVE LEVEL</span>
+                    <span id="hud-level" class="value">WAVE 1</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="label">WARSHIP LIVES</span>
+                    <div id="hud-lives" class="lives-icons">❤️ ❤️ ❤️</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-hud-garage" class="btn-secondary" style="color: var(--amber-gold); border-color: var(--amber-gold);">🛠️ GARAGE</button>
+                    <button id="btn-pause" class="btn-secondary">PAUSE</button>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+                <canvas id="attackersCanvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+
+        <!-- Naval Garage & Fleet Hangar Modal -->
+        <div id="garage-modal" class="modal-overlay hidden">
+            <div class="garage-box">
+                <div class="garage-header">
+                    <h2>🛠️ NAVAL GARAGE & FLEET HANGAR</h2>
+                    <div class="garage-balance">
+                        BAL: <strong id="garage-coins-display">🪙 0 COINS</strong>
+                    </div>
+                </div>
+
+                <!-- Garage Navigation Tabs -->
+                <div class="garage-tabs">
+                    <button id="tab-btn-upgrades" class="tab-btn active">⚙️ STAT UPGRADES</button>
+                    <button id="tab-btn-ships" class="tab-btn">⚓ WARSHIP FLEET (BUY SHIPS)</button>
+                </div>
+
+                <!-- Tab 1: Stat Upgrades Content -->
+                <div id="tab-upgrades-content" class="tab-content active">
+                    <div class="upgrades-grid" id="upgrades-container">
+                        <!-- Dynamically populated upgrade cards -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Buyable Ships Content -->
+                <div id="tab-ships-content" class="tab-content hidden">
+                    <div class="ships-grid" id="ships-container">
+                        <!-- Dynamically populated buyable ship cards -->
+                    </div>
+                </div>
+
+                <div class="garage-footer">
+                    <button id="btn-close-garage" class="btn-primary">CLOSE GARAGE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameover-modal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h2 id="gameover-title">DEFENSE BREACHED!</h2>
+                <p id="gameover-desc">Your warship was destroyed by enemy bombers.</p>
+                <br>
+                <div class="score-summary">
+                    FINAL SCORE: <strong id="gameover-score" style="color: var(--amber-gold);">0 PTS</strong>
+                </div>
+                <br>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button id="btn-restart" class="btn-primary">PLAY AGAIN</button>
+                    <button id="btn-gameover-garage" class="btn-garage">🛠️ OPEN GARAGE</button>
+                    <a href="../../index.html" class="btn-secondary" style="text-decoration: none;">BACK TO ARCADE</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../auth.js"></script>
+    <script src="../../leaderboard.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

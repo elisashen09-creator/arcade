@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAVAL ARCADE — Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="crt-radar-overlay"></div>
+    <canvas id="ocean-canvas"></canvas>
+
+    <div class="arcade-wrapper">
+        <!-- Header & Command Bar -->
+        <header class="naval-header">
+            <div class="brand-section">
+                <div class="radar-logo">
+                    <div class="sweep"></div>
+                </div>
+                <div class="brand-text">
+                    <h1>NAVAL ARCADE</h1>
+                    <p>TACTICAL FLEET COMMAND HUB</p>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <div id="user-badge" class="jwt-user-badge">
+                    <span class="jwt-badge-icon">⚓</span>
+                    <div class="jwt-user-info">
+                        <span id="user-name" class="username">Cadet_Guest</span>
+                        <span id="user-rank" class="rank">Guest Recruiter</span>
+                    </div>
+                </div>
+
+                <button id="btn-leaderboard" class="nav-btn">
+                    🏆 LEADERBOARDS
+                </button>
+                <button id="btn-auth" class="nav-btn auth-btn">
+                    🔑 LOG IN / SIGN UP
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-banner">
+            <h2>DEEP SEA ARCADE COMMAND</h2>
+            <p>Welcome Officer. Deploy your fleet in strategic sea operations, defend against incoming enemy bomber squadrons, and climb the naval JWT leaderboards!</p>
+        </section>
+
+        <!-- Game Selection Grid -->
+        <section class="catalogue-section">
+            <div class="catalogue-header">
+                <h3>FEATURED NAVAL SIMULATIONS</h3>
+            </div>
+            <br>
+            <div class="games-grid">
+                <!-- Game 1 Card: Battleship -->
+                <div class="game-card">
+                    <div class="game-card-banner battleship-bg">
+                        <span class="card-badge">TACTICAL STRATEGY</span>
+                        <div class="game-card-icon">🚢</div>
+                    </div>
+                    <div class="game-card-body">
+                        <h4>BATTLESHIP</h4>
+                        <p>Place your 5-ship fleet (Carrier, Battleship, Cruiser, Submarine, Destroyer) on the tactical grid. Take turns targeting and firing at the enemy AI's hidden fleet.</p>
+                        <div class="game-card-footer">
+                            <span class="high-score-tag">TOP SCORE: <strong id="score-battleship">950 PTS</strong></span>
+                            <a href="games/battleship/index.html" class="play-card-btn">DEPLOY FLEET</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 2 Card: Ship Attackers -->
+                <div class="game-card">
+                    <div class="game-card-banner ship-attackers-bg">
+                        <span class="card-badge">2D RETRO SHOOTER</span>
+                        <div class="game-card-icon">🎯</div>
+                    </div>
+                    <div class="game-card-body">
+                        <h4>SHIP ATTACKERS</h4>
+                        <p>Retro 2D top-down arcade shooter! Command your Warship at the bottom of the screen, defend 4 sea barricades, and shoot down relentless waves of enemy bombers.</p>
+                        <div class="game-card-footer">
+                            <span class="high-score-tag">TOP SCORE: <strong id="score-attackers">14,500 PTS</strong></span>
+                            <a href="games/ship-attackers/index.html" class="play-card-btn">ENGAGE BOMBERS</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 3 Card: Astra Sector Space Combat -->
+                <div class="game-card">
+                    <div class="game-card-banner" style="background: linear-gradient(135deg, #050b14 0%, #00f0ff22 100%); border-bottom: 2px solid #00f0ff;">
+                        <span class="card-badge" style="background: #00f0ff; color: #000; font-weight: 800;">SPACE COMBAT SIMULATOR</span>
+                        <div class="game-card-icon">🚀</div>
+                    </div>
+                    <div class="game-card-body">
+                        <h4>ASTRA SECTOR</h4>
+                        <p>Command flagship space fighters in 2D vector space combat! Battle through 15 sector missions, buy & upgrade 4 ship classes, and defeat Leviathan Dreadnought Bosses.</p>
+                        <div class="game-card-footer">
+                            <span class="high-score-tag">SECTORS: <strong style="color: #00f0ff;">15 MISSIONS</strong></span>
+                            <a href="../astra-fleet/index.html" class="play-card-btn" style="background: linear-gradient(90deg, #00f0ff, #9d00ff); color: #fff;">LAUNCH ASTRA SECTOR</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Auth Modal (JWT Sign Up / Login) -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">🔑 NAVAL OFFICER AUTHENTICATION</h3>
+                <button id="btn-close-auth" class="close-btn">&times;</button>
+            </div>
+            <form id="auth-form" class="auth-form">
+                <div class="form-group">
+                    <label for="auth-username">OFFICER CALLSIGN / USERNAME</label>
+                    <input type="text" id="auth-username" class="form-input" placeholder="e.g. Admiral_Vanguard" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">SECURITY PASSCODE</label>
+                    <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <div id="auth-error" style="color: var(--alert-red); font-size: 0.8rem; display: none;"></div>
+                <button type="submit" id="auth-submit-btn" class="form-submit-btn">LOG IN (JWT TOKEN)</button>
+                <p style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer;" id="auth-toggle">
+                    Don't have an officer profile? <strong>Create Account</strong>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>🏆 NAVAL HIGH SCORES</h3>
+                <button id="btn-close-leaderboard" class="close-btn">&times;</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button id="lb-tab-battleship" class="nav-btn" style="flex: 1;">BATTLESHIP</button>
+                <button id="lb-tab-attackers" class="nav-btn" style="flex: 1;">SHIP ATTACKERS</button>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>RANK</th>
+                        <th>OFFICER</th>
+                        <th>SCORE</th>
+                        <th>DATE</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth.js"></script>
+    <script src="leaderboard.js"></script>
+    <script>
+        // Interactive ocean waves background canvas
+        const canvas = document.getElementById('ocean-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        let step = 0;
+        function drawOcean() {
+            ctx.fillStyle = '#050a14';
+            ctx.fillRect(0, 0, width, height);
+
+            step += 0.02;
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = `rgba(10, 25, 47, ${0.3 + i * 0.15})`;
+                ctx.beginPath();
+                ctx.moveTo(0, height);
+                for (let x = 0; x <= width; x += 20) {
+                    const y = Math.sin(x * 0.005 + step + i) * 15 + (height - 150 + i * 30);
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(width, height);
+                ctx.closePath();
+                ctx.fill();
+            }
+            requestAnimationFrame(drawOcean);
+        }
+        drawOcean();
+
+        // UI Modal & Auth Interaction Script
+        let isSignup = false;
+
+        function updateUI() {
+            const user = window.navalAuth.getCurrentUser();
+            document.getElementById('user-name').innerText = user.username;
+            document.getElementById('user-rank').innerText = user.rank;
+
+            if (user.authenticated) {
+                document.getElementById('btn-auth').innerText = 'LOG OUT';
+            } else {
+                document.getElementById('btn-auth').innerText = '🔑 LOG IN / SIGN UP';
+            }
+
+            // Top scores display
+            const bScores = window.navalLeaderboard.getScores('battleship');
+            if (bScores.length > 0) {
+                document.getElementById('score-battleship').innerText = bScores[0].score + ' PTS';
+            }
+            const sScores = window.navalLeaderboard.getScores('ship_attackers');
+            if (sScores.length > 0) {
+                document.getElementById('score-attackers').innerText = sScores[0].score + ' PTS';
+            }
+        }
+        updateUI();
+
+        // Auth Modal Handlers
+        const authModal = document.getElementById('auth-modal');
+        document.getElementById('btn-auth').onclick = () => {
+            const user = window.navalAuth.getCurrentUser();
+            if (user.authenticated) {
+                window.navalAuth.logout();
+                updateUI();
+            } else {
+                authModal.classList.add('active');
+            }
+        };
+        document.getElementById('btn-close-auth').onclick = () => authModal.classList.remove('active');
+
+        document.getElementById('auth-toggle').onclick = () => {
+            isSignup = !isSignup;
+            document.getElementById('auth-modal-title').innerText = isSignup ? '📝 CREATE OFFICER PROFILE (JWT)' : '🔑 NAVAL OFFICER AUTHENTICATION';
+            document.getElementById('auth-submit-btn').innerText = isSignup ? 'CREATE ACCOUNT' : 'LOG IN (JWT TOKEN)';
+            document.getElementById('auth-toggle').innerHTML = isSignup ? 'Already registered? <strong>Log In</strong>' : 'Don\'t have an officer profile? <strong>Create Account</strong>';
+        };
+
+        document.getElementById('auth-form').onsubmit = (e) => {
+            e.preventDefault();
+            const u = document.getElementById('auth-username').value;
+            const p = document.getElementById('auth-password').value;
+            const errDiv = document.getElementById('auth-error');
+
+            const res = isSignup ? window.navalAuth.signup(u, p) : window.navalAuth.login(u, p);
+            if (res.success) {
+                errDiv.style.display = 'none';
+                authModal.classList.remove('active');
+                updateUI();
+            } else {
+                errDiv.innerText = res.error;
+                errDiv.style.display = 'block';
+            }
+        };
+
+        // Leaderboard Modal Handlers
+        const lbModal = document.getElementById('leaderboard-modal');
+        document.getElementById('btn-leaderboard').onclick = () => {
+            renderLeaderboard('battleship');
+            lbModal.classList.add('active');
+        };
+        document.getElementById('btn-close-leaderboard').onclick = () => lbModal.classList.remove('active');
+
+        document.getElementById('lb-tab-battleship').onclick = () => renderLeaderboard('battleship');
+        document.getElementById('lb-tab-attackers').onclick = () => renderLeaderboard('ship_attackers');
+
+        function renderLeaderboard(gameId) {
+            const scores = window.navalLeaderboard.getScores(gameId);
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            scores.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${idx + 1}</td>
+                    <td>${s.username}</td>
+                    <td style="color: var(--amber-gold); font-weight: bold;">${s.score.toLocaleString()}</td>
+                    <td>${s.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

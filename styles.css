@@ -1,0 +1,471 @@
+/* NAVAL ARCADE - Sea-Themed CSS Design System
+   Colors: Deep Navy Blue (#0a192f), Battleship Steel Gray (#3a4a58), Dark Sea Green (#1b4332), Pure Black (#050a14) */
+
+:root {
+    --bg-navy: #0a192f;
+    --bg-dark: #050a14;
+    --steel-gray: #3a4a58;
+    --sea-green: #1b4332;
+    --light-sea-green: #2d6a4f;
+    --neon-cyan: #00f0ff;
+    --amber-gold: #ffb700;
+    --alert-red: #ff3366;
+    --text-primary: #e6f1ff;
+    --text-muted: #8892b0;
+    --card-glass: rgba(10, 25, 47, 0.85);
+    --border-glass: rgba(0, 240, 255, 0.25);
+    --font-header: 'Orbitron', sans-serif;
+    --font-code: 'Fira Code', monospace;
+    --font-sans: 'Inter', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-dark);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* Background Canvas & Ocean Waves */
+#ocean-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.crt-radar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        rgba(10, 25, 47, 0) 50%, 
+        rgba(5, 10, 20, 0.3) 50%
+    );
+    background-size: 100% 4px;
+    opacity: 0.6;
+}
+
+/* Main Container Layout */
+.arcade-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-height: 100vh;
+}
+
+/* Header & Command Bar */
+header.naval-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 28px;
+    background: var(--card-glass);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 240, 255, 0.15);
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.radar-logo {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle, var(--sea-green), var(--bg-dark));
+    border: 2px solid var(--neon-cyan);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.radar-logo .sweep {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from 0deg, rgba(0, 240, 255, 0.5), transparent 60deg);
+    animation: radar-rotate 3s linear infinite;
+}
+
+.brand-text h1 {
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #fff;
+    text-shadow: 0 0 12px var(--neon-cyan);
+}
+
+.brand-text p {
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1.5px;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.jwt-user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(27, 67, 50, 0.6);
+    border: 1px solid var(--sea-green);
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.jwt-badge-icon {
+    font-size: 1.1rem;
+}
+
+.jwt-user-info .username {
+    display: block;
+    font-family: var(--font-header);
+    font-size: 0.75rem;
+    color: #fff;
+}
+
+.jwt-user-info .rank {
+    display: block;
+    font-family: var(--font-code);
+    font-size: 0.6rem;
+    color: var(--amber-gold);
+}
+
+.nav-btn {
+    background: rgba(58, 74, 88, 0.4);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: var(--font-header);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: var(--neon-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.auth-btn {
+    background: linear-gradient(135deg, var(--sea-green), var(--light-sea-green));
+    border-color: var(--sea-green);
+}
+
+.auth-btn:hover {
+    box-shadow: 0 0 15px var(--sea-green);
+}
+
+/* Hero & Welcome Section */
+.hero-banner {
+    text-align: center;
+    padding: 30px;
+    background: radial-gradient(circle at center, rgba(27, 67, 50, 0.3) 0%, rgba(10, 25, 47, 0.8) 100%);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hero-banner h2 {
+    font-family: var(--font-header);
+    font-size: 2.2rem;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px var(--neon-cyan);
+}
+
+.hero-banner p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Game Selection Catalogue Grid */
+.catalogue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.catalogue-header h3 {
+    font-family: var(--font-header);
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    letter-spacing: 1.5px;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 25px;
+}
+
+.game-card {
+    position: relative;
+    background: var(--card-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.game-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 12px 35px rgba(0, 240, 255, 0.3);
+}
+
+.game-card-banner {
+    height: 180px;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    padding: 15px;
+}
+
+.game-card-banner.battleship-bg {
+    background: linear-gradient(to top, rgba(10, 25, 47, 0.95), transparent), radial-gradient(circle, #3a4a58 0%, #0a192f 100%);
+}
+
+.game-card-banner.ship-attackers-bg {
+    background: linear-gradient(to top, rgba(10, 25, 47, 0.95), transparent), radial-gradient(circle, #1b4332 0%, #050a14 100%);
+}
+
+.card-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 240, 255, 0.2);
+    color: var(--neon-cyan);
+    border: 1px solid var(--neon-cyan);
+    font-family: var(--font-code);
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.game-card-icon {
+    font-size: 3rem;
+    margin-right: 12px;
+}
+
+.game-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.game-card-body h4 {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.game-card-body p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.game-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.high-score-tag {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--amber-gold);
+}
+
+.play-card-btn {
+    background: linear-gradient(135deg, var(--neon-cyan), #0088ff);
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--font-header);
+    font-size: 0.8rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.play-card-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+}
+
+/* Modals System */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    background: rgba(5, 10, 20, 0.88);
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background: var(--bg-navy);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 18px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.25);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.form-group label {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.form-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.form-submit-btn {
+    background: linear-gradient(135deg, var(--sea-green), var(--light-sea-green));
+    border: none;
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: var(--font-header);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Leaderboards Table */
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaderboard-table th {
+    color: var(--neon-cyan);
+}
+
+@keyframes radar-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
