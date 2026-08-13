@@ -216,57 +216,75 @@ class SpaceCombatEngine {
         }
     }
 
-       initEvents() {
+    updateDiffUI() {
+        const btnNormal = document.getElementById('diff-btn-normal');
+        const btnHard = document.getElementById('diff-btn-hard');
+        const hudBadge = document.getElementById('hud-diff-badge');
+
+        if (this.difficulty === 'hard') {
+            if (btnNormal && btnHard) {
+                btnNormal.style.border = '2px solid #555';
+                btnNormal.style.background = 'rgba(0, 240, 255, 0.05)';
+                btnNormal.style.color = '#888';
+                btnNormal.style.boxShadow = 'none';
+
+                btnHard.style.border = '2px solid #ff0055';
+                btnHard.style.background = 'rgba(255, 0, 85, 0.3)';
+                btnHard.style.color = '#ff0055';
+                btnHard.style.boxShadow = '0 0 18px rgba(255, 0, 85, 0.6)';
+            }
+            if (hudBadge) {
+                hudBadge.innerText = '🔥 HARD MODE';
+                hudBadge.style.color = '#ff0055';
+            }
+        } else {
+            if (btnNormal && btnHard) {
+                btnNormal.style.border = '2px solid #00f0ff';
+                btnNormal.style.background = 'rgba(0, 240, 255, 0.3)';
+                btnNormal.style.color = '#00f0ff';
+                btnNormal.style.boxShadow = '0 0 18px rgba(0, 240, 255, 0.6)';
+
+                btnHard.style.border = '2px solid #555';
+                btnHard.style.background = 'rgba(255, 0, 85, 0.05)';
+                btnHard.style.color = '#888';
+                btnHard.style.boxShadow = 'none';
+            }
+            if (hudBadge) {
+                hudBadge.innerText = '🟢 NORMAL';
+                hudBadge.style.color = '#00f0ff';
+            }
+        }
+    }
+
+    setDifficulty(mode) {
+        this.difficulty = mode;
+        localStorage.setItem('astra_difficulty', mode);
+        this.updateDiffUI();
+        if (window.soundSynth) window.soundSynth.playPickupSound();
+    }
+
+    initEvents() {
         if (window.navalAuth) {
             const user = window.navalAuth.getCurrentUser();
             const userEl = document.getElementById('user-name');
             if (userEl) userEl.innerText = user.username;
         }
 
-        const updateDiffUI = () => {
-            const btnNormal = document.getElementById('diff-btn-normal');
-            const btnHard = document.getElementById('diff-btn-hard');
-            if (btnNormal && btnHard) {
-                if (this.difficulty === 'hard') {
-                    btnNormal.style.border = '2px solid #555';
-                    btnNormal.style.background = 'rgba(0, 240, 255, 0.05)';
-                    btnNormal.style.color = '#888';
-                    btnNormal.style.boxShadow = 'none';
-
-                    btnHard.style.border = '2px solid #ff0055';
-                    btnHard.style.background = 'rgba(255, 0, 85, 0.25)';
-                    btnHard.style.color = '#ff0055';
-                    btnHard.style.boxShadow = '0 0 15px rgba(255, 0, 85, 0.5)';
-                } else {
-                    btnNormal.style.border = '2px solid #00f0ff';
-                    btnNormal.style.background = 'rgba(0, 240, 255, 0.25)';
-                    btnNormal.style.color = '#00f0ff';
-                    btnNormal.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.5)';
-
-                    btnHard.style.border = '2px solid #555';
-                    btnHard.style.background = 'rgba(255, 0, 85, 0.05)';
-                    btnHard.style.color = '#888';
-                    btnHard.style.boxShadow = 'none';
-                }
-            }
-        };
-        updateDiffUI();
+        this.updateDiffUI();
 
         const btnNormal = document.getElementById('diff-btn-normal');
         const btnHard = document.getElementById('diff-btn-hard');
         if (btnNormal) {
-            btnNormal.onclick = () => {
-                this.difficulty = 'normal';
-                localStorage.setItem('astra_difficulty', 'normal');
-                updateDiffUI();
+            btnNormal.onclick = (e) => {
+                e.stopPropagation();
+                this.setDifficulty('normal');
                 this.logTerminal('[MODE] Switched to NORMAL COMBAT DIFFICULTY', 'sys');
             };
         }
         if (btnHard) {
-            btnHard.onclick = () => {
-                this.difficulty = 'hard';
-                localStorage.setItem('astra_difficulty', 'hard');
-                updateDiffUI();
+            btnHard.onclick = (e) => {
+                e.stopPropagation();
+                this.setDifficulty('hard');
                 this.logTerminal('[MODE] Switched to 🔥 HARD MODE DIFFICULTY!', 'danger');
             };
         }
