@@ -14,6 +14,7 @@ class SpaceCombatEngine {
 
         this.isRunning = false;
         this.isPaused = false;
+        this.difficulty = localStorage.getItem('astra_difficulty') || 'normal';
 
         // Player Persistence & Data
         this.credits = parseInt(localStorage.getItem('astra_credits') || '100');
@@ -220,6 +221,54 @@ class SpaceCombatEngine {
             const user = window.navalAuth.getCurrentUser();
             const userEl = document.getElementById('user-name');
             if (userEl) userEl.innerText = user.username;
+        }
+
+        const updateDiffUI = () => {
+            const btnNormal = document.getElementById('diff-btn-normal');
+            const btnHard = document.getElementById('diff-btn-hard');
+            if (btnNormal && btnHard) {
+                if (this.difficulty === 'hard') {
+                    btnNormal.style.border = '2px solid #555';
+                    btnNormal.style.background = 'rgba(0, 240, 255, 0.05)';
+                    btnNormal.style.color = '#888';
+                    btnNormal.style.boxShadow = 'none';
+
+                    btnHard.style.border = '2px solid #ff0055';
+                    btnHard.style.background = 'rgba(255, 0, 85, 0.25)';
+                    btnHard.style.color = '#ff0055';
+                    btnHard.style.boxShadow = '0 0 15px rgba(255, 0, 85, 0.5)';
+                } else {
+                    btnNormal.style.border = '2px solid #00f0ff';
+                    btnNormal.style.background = 'rgba(0, 240, 255, 0.25)';
+                    btnNormal.style.color = '#00f0ff';
+                    btnNormal.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.5)';
+
+                    btnHard.style.border = '2px solid #555';
+                    btnHard.style.background = 'rgba(255, 0, 85, 0.05)';
+                    btnHard.style.color = '#888';
+                    btnHard.style.boxShadow = 'none';
+                }
+            }
+        };
+        updateDiffUI();
+
+        const btnNormal = document.getElementById('diff-btn-normal');
+        const btnHard = document.getElementById('diff-btn-hard');
+        if (btnNormal) {
+            btnNormal.onclick = () => {
+                this.difficulty = 'normal';
+                localStorage.setItem('astra_difficulty', 'normal');
+                updateDiffUI();
+                this.logTerminal('[MODE] Switched to NORMAL COMBAT DIFFICULTY', 'sys');
+            };
+        }
+        if (btnHard) {
+            btnHard.onclick = () => {
+                this.difficulty = 'hard';
+                localStorage.setItem('astra_difficulty', 'hard');
+                updateDiffUI();
+                this.logTerminal('[MODE] Switched to 🔥 HARD MODE DIFFICULTY!', 'danger');
+            };
         }
 
         window.addEventListener('resize', () => {
@@ -638,14 +687,17 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2);
+            const escortCount = (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)) * (this.difficulty === 'hard' ? 2 : 1);
             this.levelTargetKills = 1 + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat Boss & Destroy All ${escortCount} Escort Ships!`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat Boss & Destroy All ${escortCount} Escorts ${this.difficulty === 'hard' ? '(🔥 HARD)' : ''}`;
             this.spawnBoss(levelNumber);
         } else {
-            const totalEnemies = Math.min(25, 6 + (levelNumber * 2));
+            let totalEnemies = Math.min(25, 6 + (levelNumber * 2));
+            if (this.difficulty === 'hard') {
+                totalEnemies = Math.floor(totalEnemies * 1.8); // 80% more ships on normal levels!
+            }
             this.levelTargetKills = totalEnemies;
-            document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Enemy Ships`;
+            document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''}`;
             this.spawnLevelEnemies(levelNumber, totalEnemies);
         }
 
@@ -692,14 +744,29 @@ class SpaceCombatEngine {
 
             let type = 'scout';
             const r = Math.random();
-            if (levelNumber >= 2 && r > 0.7) type = 'gunship';
-            if (levelNumber >= 3 && r > 0.75) type = 'bomber';
-            if (levelNumber >= 4 && r > 0.8) type = 'interceptor';
-            if (levelNumber >= 5 && r > 0.85) type = 'frigate';
-            if (levelNumber >= 6 && r > 0.88) type = 'cruiser';
 
-            const hpMultiplier = 1 + (levelNumber * 0.35);
-            const dmgMultiplier = 1 + (levelNumber * 0.25);
+            if (this.difficulty === 'hard') {
+                // Hard mode: Stronger ships spawn much more frequently across ALL levels!
+                if (r > 0.80) type = 'cruiser';
+                else if (r > 0.62) type = 'frigate';
+                else if (r > 0.44) type = 'interceptor';
+                else if (r > 0.28) type = 'bomber';
+                else if (r > 0.14) type = 'gunship';
+                else type = 'scout';
+            } else {
+                if (levelNumber >= 2 && r > 0.7) type = 'gunship';
+                if (levelNumber >= 3 && r > 0.75) type = 'bomber';
+                if (levelNumber >= 4 && r > 0.8) type = 'interceptor';
+                if (levelNumber >= 5 && r > 0.85) type = 'frigate';
+                if (levelNumber >= 6 && r > 0.88) type = 'cruiser';
+            }
+
+            let hpMultiplier = 1 + (levelNumber * 0.35);
+            let dmgMultiplier = 1 + (levelNumber * 0.25);
+            if (this.difficulty === 'hard') {
+                hpMultiplier *= 1.35; // 35% extra HP in Hard mode
+                dmgMultiplier *= 1.25; // 25% extra damage in Hard mode
+            }
 
             const hpBase = type === 'cruiser' ? 220 : (type === 'frigate' ? 160 : (type === 'bomber' ? 140 : (type === 'gunship' ? 110 : (type === 'interceptor' ? 90 : 50))));
             const radius = type === 'cruiser' ? 34 : (type === 'frigate' ? 28 : (type === 'gunship' ? 24 : (type === 'bomber' ? 22 : 18)));
@@ -734,23 +801,25 @@ class SpaceCombatEngine {
 
         let bossName = "VOID LEVIATHAN";
         let bossColor = "#00f0ff";
-        let baseHp = 2800;
-        let baseShield = 1000;
+        let bossHpMult = this.difficulty === 'hard' ? 1.85 : 1.0; // 85% more HP for bosses in Hard mode!
+        let bossShieldMult = this.difficulty === 'hard' ? 1.85 : 1.0;
+        let baseHp = 2800 * bossHpMult;
+        let baseShield = 1000 * bossShieldMult;
         let radius = 70;
         let tier = 1;
 
         if (levelNumber >= 15) {
             bossName = "OMEGA VOID GOD DREADNOUGHT";
             bossColor = "#ffb700";
-            baseHp = 9500;
-            baseShield = 2500;
+            baseHp = 9500 * bossHpMult;
+            baseShield = 2500 * bossShieldMult;
             radius = 90;
             tier = 3;
         } else if (levelNumber >= 10) {
             bossName = "CYBERNETIC VOID TITAN";
             bossColor = "#9d00ff";
-            baseHp = 5500;
-            baseShield = 1800;
+            baseHp = 5500 * bossHpMult;
+            baseShield = 1800 * bossShieldMult;
             radius = 80;
             tier = 2;
         }
@@ -1100,14 +1169,15 @@ class SpaceCombatEngine {
                     }
                 }
                 // Continuous Reinforcement Dropship Spawning over time as fight progresses
+                const spawnInterval = this.difficulty === 'hard' ? 5.0 : 10.0; // Doubled spawning speed on boss levels (5s vs 10s)!
                 enemy.spawnTimer = (enemy.spawnTimer || 0) + dt;
-                if (enemy.spawnTimer >= 10.0) {
+                if (enemy.spawnTimer >= spawnInterval) {
                     enemy.spawnTimer = 0;
                     window.soundSynth.playBossWarning();
                     this.addDamageText(enemy.x, enemy.y, 'WARP DROPSHIP INBOUND! 🛸', '#ffb700');
                     this.logTerminal(`[WARNING] BOSS SUMMONED REINFORCEMENT FLEET!`, 'danger');
 
-                    const spawnCount = enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1);
+                    const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'hard' ? 2 : 1);
                     for (let c = 0; c < spawnCount; c++) {
                         const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
                         const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
