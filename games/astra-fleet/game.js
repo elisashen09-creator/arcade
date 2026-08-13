@@ -523,13 +523,13 @@ class SpaceCombatEngine {
         if (upgradesContainer) {
             upgradesContainer.innerHTML = '';
             const upgradeTypes = [
-                { id: 'maxHull', title: 'Max Hull Capacity', desc: '+30 HP to Flagship Hull', icon: '❤️', costBase: 900 },
-                { id: 'shieldCapacity', title: 'Force Shield Matrix', desc: '+25 HP to Force Shield', icon: '🛡️', costBase: 1100 },
-                { id: 'shieldRecharge', title: 'Shield Generator', desc: '+0.15 Shield Regen per sec', icon: '⚡', costBase: 1300 },
-                { id: 'damage', title: 'Plasma Cannon Power', desc: '+4 Base Damage per laser shot', icon: '🔫', costBase: 1200 },
-                { id: 'fireRate', title: 'Rapid Fire Coils', desc: '+15% Weapon Firing Speed', icon: '🚀', costBase: 1500 },
-                { id: 'engineSpeed', title: 'Ion Thrusters', desc: '+10% Engine Movement Speed', icon: '💨', costBase: 1000 },
-                { id: 'cooldown', title: 'Ability Overclock', desc: '-15% Special Ability Cooldown', icon: '⏱️', costBase: 1700 }
+                { id: 'maxHull', title: 'Max Hull Capacity', desc: '+30 HP to Flagship Hull', icon: '❤️', costBase: 450 },
+                { id: 'shieldCapacity', title: 'Force Shield Matrix', desc: '+25 HP to Force Shield', icon: '🛡️', costBase: 550 },
+                { id: 'shieldRecharge', title: 'Shield Generator', desc: '+0.15 Shield Regen per sec', icon: '⚡', costBase: 650 },
+                { id: 'damage', title: 'Plasma Cannon Power', desc: '+4 Base Damage per laser shot', icon: '🔫', costBase: 600 },
+                { id: 'fireRate', title: 'Rapid Fire Coils', desc: '+15% Weapon Firing Speed', icon: '🚀', costBase: 750 },
+                { id: 'engineSpeed', title: 'Ion Thrusters', desc: '+10% Engine Movement Speed', icon: '💨', costBase: 500 },
+                { id: 'cooldown', title: 'Ability Overclock', desc: '-15% Special Ability Cooldown', icon: '⏱️', costBase: 850 }
             ];
 
             upgradeTypes.forEach(upg => {
