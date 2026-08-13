@@ -16,11 +16,10 @@ class SpaceCombatEngine {
         this.isPaused = false;
         this.difficulty = localStorage.getItem('astra_difficulty') || 'normal';
 
-        // Player Persistence & Data
+        // Player Account Data
         this.credits = parseInt(localStorage.getItem('astra_credits') || '100');
-        this.unlockedLevel = parseInt(localStorage.getItem('astra_unlocked_level') || '1');
-        this.completedLevels = JSON.parse(localStorage.getItem('astra_completed_levels') || '[]');
-        this.currentLevel = this.unlockedLevel; // Auto-select most recently unlocked mission
+        this.purchasedShips = JSON.parse(localStorage.getItem('astra_purchased_ships') || JSON.stringify(['ship1']));
+        this.selectedShipId = localStorage.getItem('astra_selected_ship') || 'ship1';
 
         this.missionNames = {
             1: "OUTER RIM PERIMETER",
@@ -40,18 +39,8 @@ class SpaceCombatEngine {
             15: "OMEGA VOID GOD DREADNOUGHT"
         };
 
-        this.purchasedShips = JSON.parse(localStorage.getItem('astra_purchased_ships') || JSON.stringify(['ship1']));
-        this.selectedShipId = localStorage.getItem('astra_selected_ship') || 'ship1';
-
-        this.upgrades = JSON.parse(localStorage.getItem('astra_upgrades') || JSON.stringify({
-            maxHull: 0,
-            shieldCapacity: 0,
-            shieldRecharge: 0,
-            damage: 0,
-            fireRate: 0,
-            engineSpeed: 0,
-            cooldown: 0
-        }));
+        // Load Mode-Specific Data (Map Progress & Hangar Upgrades per mode)
+        this.loadModeData();
 
         // Definitions of Player Ships
         this.shipDefinitions = {
@@ -256,11 +245,67 @@ class SpaceCombatEngine {
         }
     }
 
-    setDifficulty(mode) {
-        this.difficulty = mode;
+    loadModeData() {
+        const mode = this.difficulty || 'normal';
+        let unlockedKey = `astra_unlocked_level_${mode}`;
+        let completedKey = `astra_completed_levels_${mode}`;
+        let upgradesKey = `astra_upgrades_${mode}`;
+
+        // Backward compatibility migration for normal mode
+        if (!localStorage.getItem(unlockedKey) && mode === 'normal' && localStorage.getItem('astra_unlocked_level')) {
+            localStorage.setItem(unlockedKey, localStorage.getItem('astra_unlocked_level'));
+        }
+        if (!localStorage.getItem(completedKey) && mode === 'normal' && localStorage.getItem('astra_completed_levels')) {
+            localStorage.setItem(completedKey, localStorage.getItem('astra_completed_levels'));
+        }
+        if (!localStorage.getItem(upgradesKey) && mode === 'normal' && localStorage.getItem('astra_upgrades')) {
+            localStorage.setItem(upgradesKey, localStorage.getItem('astra_upgrades'));
+        }
+
+        this.unlockedLevel = parseInt(localStorage.getItem(unlockedKey) || '1');
+        this.completedLevels = JSON.parse(localStorage.getItem(completedKey) || '[]');
+        this.currentLevel = this.unlockedLevel;
+
+        const defaultUpgrades = {
+            maxHull: 0,
+            shieldCapacity: 0,
+            shieldRecharge: 0,
+            damage: 0,
+            fireRate: 0,
+            engineSpeed: 0,
+            cooldown: 0
+        };
+        this.upgrades = JSON.parse(localStorage.getItem(upgradesKey) || JSON.stringify(defaultUpgrades));
+    }
+
+    saveModeData() {
+        const mode = this.difficulty || 'normal';
+        localStorage.setItem(`astra_unlocked_level_${mode}`, this.unlockedLevel.toString());
+        localStorage.setItem(`astra_completed_levels_${mode}`, JSON.stringify(this.completedLevels));
+        localStorage.setItem(`astra_upgrades_${mode}`, JSON.stringify(this.upgrades));
+        localStorage.setItem('astra_credits', this.credits.toString());
+        localStorage.setItem('astra_purchased_ships', JSON.stringify(this.purchasedShips));
+        localStorage.setItem('astra_selected_ship', this.selectedShipId);
         localStorage.setItem('astra_difficulty', mode);
-        this.updateDiffUI();
-        if (window.soundSynth) window.soundSynth.playPickupSound();
+    }
+
+    setDifficulty(mode) {
+        if (this.difficulty !== mode) {
+            this.saveModeData();
+            this.difficulty = mode;
+            this.loadModeData();
+            this.updateDiffUI();
+            if (window.soundSynth) window.soundSynth.playPickupSound();
+
+            const hangarModal = document.getElementById('hangar-modal');
+            if (hangarModal && hangarModal.classList.contains('active')) {
+                this.renderHangarShop();
+            }
+            const mapModal = document.getElementById('map-modal');
+            if (mapModal && mapModal.classList.contains('active')) {
+                this.initSectorMap();
+            }
+        }
     }
 
     initEvents() {
@@ -567,15 +612,13 @@ class SpaceCombatEngine {
                     if (isEquipped) return;
                     if (isPurchased) {
                         this.selectedShipId = id;
-                        localStorage.setItem('astra_selected_ship', id);
+                        this.saveModeData();
                         this.renderHangarShop();
                     } else if (this.credits >= def.price) {
                         this.credits -= def.price;
                         this.purchasedShips.push(id);
                         this.selectedShipId = id;
-                        localStorage.setItem('astra_credits', this.credits.toString());
-                        localStorage.setItem('astra_purchased_ships', JSON.stringify(this.purchasedShips));
-                        localStorage.setItem('astra_selected_ship', id);
+                        this.saveModeData();
                         window.soundSynth.playPickupSound();
                         this.renderHangarShop();
                     }
@@ -627,8 +670,7 @@ class SpaceCombatEngine {
                     if (currentLvl < maxLvl && this.credits >= cost) {
                         this.credits -= cost;
                         this.upgrades[upg.id] = currentLvl + 1;
-                        localStorage.setItem('astra_credits', this.credits.toString());
-                        localStorage.setItem('astra_upgrades', JSON.stringify(this.upgrades));
+                        this.saveModeData();
                         window.soundSynth.playPickupSound();
                         this.renderHangarShop();
                     }
@@ -1477,17 +1519,19 @@ class SpaceCombatEngine {
 
         if (this.currentLevel >= this.unlockedLevel) {
             this.unlockedLevel = this.currentLevel + 1;
-            localStorage.setItem('astra_unlocked_level', this.unlockedLevel.toString());
         }
 
         if (!this.completedLevels.includes(this.currentLevel)) {
             this.completedLevels.push(this.currentLevel);
-            localStorage.setItem('astra_completed_levels', JSON.stringify(this.completedLevels));
         }
 
-        const bonus = this.currentLevel * 150;
+        let bonus = this.currentLevel * 150;
+        if (this.difficulty === 'hard') {
+            bonus = Math.floor(bonus * 2.0); // 2x Ore Bonus on Hard mode!
+        }
         this.credits += bonus;
-        localStorage.setItem('astra_credits', this.credits.toString());
+
+        this.saveModeData();
 
         const currentMission = this.missionNames[this.currentLevel] || `SECTOR ${this.currentLevel}`;
         const nextMission = this.missionNames[this.unlockedLevel] || `SECTOR ${this.unlockedLevel}`;
