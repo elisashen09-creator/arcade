@@ -216,6 +216,12 @@ class SpaceCombatEngine {
     }
 
     initEvents() {
+        if (window.navalAuth) {
+            const user = window.navalAuth.getCurrentUser();
+            const userEl = document.getElementById('user-name');
+            if (userEl) userEl.innerText = user.username;
+        }
+
         window.addEventListener('resize', () => {
             this.width = window.innerWidth;
             this.height = window.innerHeight;
@@ -1092,6 +1098,7 @@ class SpaceCombatEngine {
                             });
                         }
                     }
+                }
                 // Continuous Reinforcement Dropship Spawning over time as fight progresses
                 enemy.spawnTimer = (enemy.spawnTimer || 0) + dt;
                 if (enemy.spawnTimer >= 10.0) {
@@ -1402,6 +1409,11 @@ class SpaceCombatEngine {
         document.getElementById('vic-next-lvl').innerText = `LEVEL ${this.unlockedLevel}: ${nextMission}`;
         document.getElementById('victory-level-name').innerText = `${currentMission} CLEARED!`;
 
+        if (window.navalLeaderboard) {
+            const finalScore = (this.currentLevel * 1000) + (this.enemiesKilledCurrentLevel * 100) + this.levelOreEarned;
+            window.navalLeaderboard.recordScore('astra_sector', finalScore);
+        }
+
         this.hideAllModals();
         const victoryModal = document.getElementById('victory-modal');
         if (victoryModal) {
@@ -1417,6 +1429,11 @@ class SpaceCombatEngine {
         document.getElementById('res-score').innerText = (this.enemiesKilledCurrentLevel * 100).toLocaleString();
         document.getElementById('res-kills').innerText = this.enemiesKilledCurrentLevel;
         document.getElementById('res-credits').innerText = `+${this.levelOreEarned} ORE`;
+
+        if (window.navalLeaderboard) {
+            const finalScore = (this.currentLevel * 1000) + (this.enemiesKilledCurrentLevel * 100) + this.levelOreEarned;
+            window.navalLeaderboard.recordScore('astra_sector', finalScore);
+        }
 
         this.hideAllModals();
         const gameoverModal = document.getElementById('gameover-overlay');

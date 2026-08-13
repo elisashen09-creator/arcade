@@ -27,6 +27,12 @@
             </div>
 
             <div class="stats-bar">
+                <!-- Officer Callsign -->
+                <div class="stat-box">
+                    <span class="label">OFFICER</span>
+                    <span id="user-name" class="value" style="color: #00f0ff; font-weight: 700;">Cadet_Guest</span>
+                </div>
+
                 <!-- Hull Health -->
                 <div class="stat-box">
                     <span class="label">HULL HEALTH</span>
@@ -346,6 +352,9 @@
                     <button id="btn-pause-map" class="btn-secondary-large">
                         🗺️ SECTOR MAP
                     </button>
+                    <a href="../../index.html" class="btn-secondary-large" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        ⚓ ARCADE HUB
+                    </a>
                 </div>
             </div>
         </div>
@@ -353,6 +362,8 @@
     </div>
 
     <!-- Scripts -->
+    <script src="../../auth.js"></script>
+    <script src="../../leaderboard.js"></script>
     <script src="audio.js"></script>
     <script src="game.js"></script>
 </body>

@@ -18,9 +18,24 @@ class NavalLeaderboard {
                     { username: 'admiral', score: 14500, date: '2026-08-11' },
                     { username: 'captain', score: 9800, date: '2026-08-11' },
                     { username: 'Cadet_Guest', score: 5200, date: '2026-08-11' }
+                ],
+                astra_sector: [
+                    { username: 'admiral', score: 28500, date: '2026-08-11' },
+                    { username: 'captain', score: 19200, date: '2026-08-11' },
+                    { username: 'Cadet_Guest', score: 8400, date: '2026-08-11' }
                 ]
             };
             localStorage.setItem(this.storageKey, JSON.stringify(initialScores));
+        } else {
+            const data = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+            if (!data.astra_sector) {
+                data.astra_sector = [
+                    { username: 'admiral', score: 28500, date: '2026-08-11' },
+                    { username: 'captain', score: 19200, date: '2026-08-11' },
+                    { username: 'Cadet_Guest', score: 8400, date: '2026-08-11' }
+                ];
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
         }
     }
 

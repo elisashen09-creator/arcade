@@ -99,7 +99,7 @@
                         <h4>ASTRA SECTOR</h4>
                         <p>Command flagship space fighters in 2D vector space combat! Battle through 15 sector missions, buy & upgrade 4 ship classes, and defeat Leviathan Dreadnought Bosses.</p>
                         <div class="game-card-footer">
-                            <span class="high-score-tag">SECTORS: <strong style="color: #00f0ff;">15 MISSIONS</strong></span>
+                            <span class="high-score-tag">TOP SCORE: <strong id="score-astra" style="color: #00f0ff;">28,500 PTS</strong></span>
                             <a href="games/astra-fleet/index.html" class="play-card-btn" style="background: linear-gradient(90deg, #00f0ff, #9d00ff); color: #fff;">LAUNCH ASTRA SECTOR</a>
                         </div>
                     </div>
@@ -143,6 +143,7 @@
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button id="lb-tab-battleship" class="nav-btn" style="flex: 1;">BATTLESHIP</button>
                 <button id="lb-tab-attackers" class="nav-btn" style="flex: 1;">SHIP ATTACKERS</button>
+                <button id="lb-tab-astra" class="nav-btn" style="flex: 1;">ASTRA SECTOR</button>
             </div>
             <table class="leaderboard-table">
                 <thead>
@@ -218,7 +219,11 @@
             }
             const sScores = window.navalLeaderboard.getScores('ship_attackers');
             if (sScores.length > 0) {
-                document.getElementById('score-attackers').innerText = sScores[0].score + ' PTS';
+                document.getElementById('score-attackers').innerText = sScores[0].score.toLocaleString() + ' PTS';
+            }
+            const aScores = window.navalLeaderboard.getScores('astra_sector');
+            if (aScores.length > 0) {
+                document.getElementById('score-astra').innerText = aScores[0].score.toLocaleString() + ' PTS';
             }
         }
         updateUI();
@@ -270,6 +275,7 @@
 
         document.getElementById('lb-tab-battleship').onclick = () => renderLeaderboard('battleship');
         document.getElementById('lb-tab-attackers').onclick = () => renderLeaderboard('ship_attackers');
+        document.getElementById('lb-tab-astra').onclick = () => renderLeaderboard('astra_sector');
 
         function renderLeaderboard(gameId) {
             const scores = window.navalLeaderboard.getScores(gameId);
