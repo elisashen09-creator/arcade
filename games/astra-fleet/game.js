@@ -985,55 +985,59 @@ class SpaceCombatEngine {
 
         let bossName = "VOID LEVIATHAN";
         let bossColor = "#00f0ff";
-        let bossHpMult = this.difficulty === 'impossible' ? 2.5 : (this.difficulty === 'hard' ? 1.85 : 1.0);
-        let bossShieldMult = this.difficulty === 'impossible' ? 2.5 : (this.difficulty === 'hard' ? 1.85 : 1.0);
-        let baseHp = 2800 * bossHpMult;
-        let baseShield = 1000 * bossShieldMult;
+        let bossHpMult = this.difficulty === 'impossible' ? 1.5 : (this.difficulty === 'hard' ? 1.25 : 1.0);
+        let bossShieldMult = this.difficulty === 'impossible' ? 1.5 : (this.difficulty === 'hard' ? 1.25 : 1.0);
+        let baseHp = 2500 * bossHpMult;
+        let baseShield = 800 * bossShieldMult;
         let radius = 70;
         let tier = 1;
 
         if (levelNumber >= 30) {
             bossName = "VOID GOD APOCALYPSE PRIME";
             bossColor = "#ff0055";
-            baseHp = 32000 * bossHpMult;
-            baseShield = 8000 * bossShieldMult;
+            baseHp = 6500 * bossHpMult;
+            baseShield = 2200 * bossShieldMult;
             radius = 110;
             tier = 6;
         } else if (levelNumber >= 25) {
             bossName = "DARK MATTER GRAVEYARD ARCHON";
             bossColor = "#e000ff";
-            baseHp = 22000 * bossHpMult;
-            baseShield = 5500 * bossShieldMult;
+            baseHp = 5800 * bossHpMult;
+            baseShield = 1800 * bossShieldMult;
             radius = 100;
             tier = 5;
         } else if (levelNumber >= 20) {
             bossName = "HYPERION CHRONO OVERLORD";
             bossColor = "#00ffcc";
-            baseHp = 15000 * bossHpMult;
-            baseShield = 4000 * bossShieldMult;
+            baseHp = 5000 * bossHpMult;
+            baseShield = 1500 * bossShieldMult;
             radius = 95;
             tier = 4;
         } else if (levelNumber >= 15) {
             bossName = "OMEGA VOID GOD DREADNOUGHT";
             bossColor = "#ffb700";
-            baseHp = 9500 * bossHpMult;
-            baseShield = 2500 * bossShieldMult;
+            baseHp = 4200 * bossHpMult;
+            baseShield = 1200 * bossShieldMult;
             radius = 90;
             tier = 3;
         } else if (levelNumber >= 10) {
             bossName = "CYBERNETIC VOID TITAN";
             bossColor = "#9d00ff";
-            baseHp = 5500 * bossHpMult;
-            baseShield = 1800 * bossShieldMult;
+            baseHp = 3400 * bossHpMult;
+            baseShield = 1000 * bossShieldMult;
             radius = 80;
             tier = 2;
         }
+
+        // Enforce maximum 10,000 HP cap for any single boss
+        baseHp = Math.min(10000, baseHp);
 
         const isDualBoss = (levelNumber === 15 || levelNumber === 30);
         const bossCount = isDualBoss ? 2 : 1;
 
         if (isDualBoss) {
-            baseHp = 32000; // Dual bosses have exactly 32,000 HP each!
+            baseHp = 5000; // Dual/double bosses have exactly 5,000 HP each!
+            baseShield = 1200;
         }
 
         for (let b = 0; b < bossCount; b++) {
