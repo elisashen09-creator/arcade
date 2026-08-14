@@ -534,7 +534,7 @@ class SpaceCombatEngine {
         document.getElementById('tab-btn-upgrades').onclick = () => this.switchHangarTab('upgrades');
 
         document.getElementById('btn-next-level').onclick = () => {
-            if (this.difficulty === 'mission' && this.currentLevel === 3) {
+            if (this.difficulty === 'mission' && this.currentLevel === 5) {
                 this.openStartOverlay();
             } else {
                 this.startLevel(this.unlockedLevel);
@@ -577,15 +577,17 @@ class SpaceCombatEngine {
         if (!container) return;
         container.innerHTML = '';
 
-        const maxLevel = (this.difficulty === 'mission' ? 3 : 30);
+        const maxLevel = (this.difficulty === 'mission' ? 5 : 30);
         const missionModeNames = {
             1: 'MISSION ALPHA: NEBULA INFILTRATION',
             2: 'MISSION BETA: CORRIDOR OF FIRE',
-            3: 'MISSION OMEGA: CITADEL WAR-TITAN 👑'
+            3: 'MISSION GAMMA: VOID FORTRESS SIEGE',
+            4: 'MISSION DELTA: DREADNOUGHT SHIPYARD',
+            5: 'MISSION OMEGA: CITADEL WAR-TITAN 👑'
         };
 
         for (let i = 1; i <= maxLevel; i++) {
-            const isBoss = (this.difficulty === 'mission' ? (i === 3) : (this.difficulty === 'impossible' ? (i % 3 === 0) : (i % 5 === 0)));
+            const isBoss = (this.difficulty === 'mission' ? (i === 5) : (this.difficulty === 'impossible' ? (i % 3 === 0) : (i % 5 === 0)));
             const isDualBoss = (this.difficulty !== 'mission' && (i === 15 || i === 30));
             const isUnlocked = (i <= this.unlockedLevel);
             const isCompleted = this.completedLevels.includes(i);
@@ -740,7 +742,7 @@ class SpaceCombatEngine {
                 
                 let btnText = isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`);
                 if (def.isMissionReward && !isPurchased) {
-                    btnText = '🔒 MISSION REWARD (Clear all 3 levels of The Mission mode to Unlock)';
+                    btnText = '🔒 MISSION REWARD (Clear all 5 levels of The Mission mode to Unlock)';
                 }
 
                 card.innerHTML = `
@@ -905,7 +907,7 @@ class SpaceCombatEngine {
         // HIDE ALL SCREENS & OVERLAYS COMPLETELY
         this.hideAllModals();
 
-        const isBossLevel = (this.difficulty === 'mission' ? (levelNumber === 3) : (this.difficulty === 'impossible' ? (levelNumber % 3 === 0) : (levelNumber % 5 === 0)));
+        const isBossLevel = (this.difficulty === 'mission' ? (levelNumber === 5) : (this.difficulty === 'impossible' ? (levelNumber % 3 === 0) : (levelNumber % 5 === 0)));
         const isDualBoss = (this.difficulty !== 'mission' && (levelNumber === 15 || levelNumber === 30));
         this.bossActive = isBossLevel;
 
@@ -926,10 +928,10 @@ class SpaceCombatEngine {
             const escortCount = (this.difficulty === 'mission' ? 10 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
             const bossCount = 1;
             this.levelTargetKills = bossCount + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan' : 'Boss'} & Destroy All ${escortCount} Escorts`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan (Level 5 Final Boss)' : 'Boss'} & Destroy All ${escortCount} Escorts`;
             this.spawnBoss(levelNumber);
         } else {
-            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : 45) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
+            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : (levelNumber === 2 ? 40 : (levelNumber === 3 ? 50 : 60))) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
             if (this.difficulty === 'impossible') {
                 totalEnemies = Math.floor(totalEnemies * 2.5); // 150% more ships on Impossible!
             } else if (this.difficulty === 'hard') {
@@ -1070,7 +1072,7 @@ class SpaceCombatEngine {
         let radius = 70;
         let tier = 1;
 
-        if (this.difficulty === 'mission' && levelNumber === 3) {
+        if (this.difficulty === 'mission' && levelNumber === 5) {
             bossName = "OMEGA CITADEL WAR-TITAN";
             bossColor = "#ffb700";
             baseHp = 22000;
@@ -1869,8 +1871,8 @@ class SpaceCombatEngine {
         this.isRunning = false;
         window.soundSynth.stopSpaceMusic();
 
-        // Unlock Astra Sovereign Vanguard if all 3 levels of The Mission mode are completed!
-        if (this.difficulty === 'mission' && this.currentLevel === 3) {
+        // Unlock Astra Sovereign Vanguard if all 5 levels of The Mission mode are completed!
+        if (this.difficulty === 'mission' && this.currentLevel === 5) {
             if (!this.purchasedShips.includes('ship_mission_reward')) {
                 this.purchasedShips.push('ship_mission_reward');
                 this.selectedShipId = 'ship_mission_reward';
@@ -1901,10 +1903,10 @@ class SpaceCombatEngine {
         const nextMission = this.missionNames[this.unlockedLevel] || `SECTOR ${this.unlockedLevel}`;
 
         const nextBtn = document.getElementById('btn-next-level');
-        if (this.difficulty === 'mission' && this.currentLevel === 3) {
+        if (this.difficulty === 'mission' && this.currentLevel === 5) {
             if (nextBtn) nextBtn.innerText = '🚀 RETURN TO HOMESCREEN (MAIN MENU)';
             document.getElementById('vic-next-lvl').innerText = '🌟 THE MISSION CAMPAIGN COMPLETE!';
-            document.getElementById('victory-level-name').innerText = '🏆 THE MISSION CLEARED!';
+            document.getElementById('victory-level-name').innerText = '🏆 ALL 5 MISSIONS CLEARED!';
         } else {
             if (nextBtn) nextBtn.innerText = '🚀 NEXT LEVEL';
             document.getElementById('vic-next-lvl').innerText = `LEVEL ${this.unlockedLevel}: ${nextMission}`;
