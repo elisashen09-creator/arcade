@@ -184,25 +184,6 @@ class SpaceCombatEngine {
                 specialIcon: '💥',
                 specialCdMax: 10.0,
                 color: '#ffb700'
-            },
-            ship_secret: {
-                id: 'ship_secret',
-                name: 'Astra Prime Celestia',
-                class: 'CELESTIAL ANCIENT WARSHIP',
-                price: 0,
-                isSecret: true,
-                speed: 5.2,
-                hull: 420,
-                shield: 300,
-                shieldRegen: 0.25,
-                hullRegen: 0.06,
-                damage: 115,
-                fireRateDelay: 0.26,
-                specialName: 'CELESTIAL BARRAGE',
-                specialSub: '8-Way Screen Vaporizer',
-                specialIcon: '🌟',
-                specialCdMax: 8.0,
-                color: '#00ffff'
             }
         };
 
@@ -441,16 +422,6 @@ class SpaceCombatEngine {
                 e.stopPropagation();
                 this.setDifficulty('impossible');
                 this.logTerminal('[MODE] Switched to ☠️ IMPOSSIBLE MODE DIFFICULTY!', 'danger');
-            };
-        }
-
-        const btnSecret = document.getElementById('btn-secret-anomaly');
-        if (btnSecret) {
-            btnSecret.onclick = (e) => {
-                e.stopPropagation();
-                window.soundSynth.playBossWarning();
-                this.logTerminal('[CLASSIFIED] Secret Anomaly Triggered! Launching Secret Dual Boss Mission!', 'danger');
-                this.startSecretMission();
             };
         }
 
@@ -704,20 +675,17 @@ class SpaceCombatEngine {
                 const isEquipped = (this.selectedShipId === id);
 
                 const card = document.createElement('div');
-                card.className = `ship-card ${isEquipped ? 'equipped' : ''} ${def.isSecret && !isPurchased ? 'secret-locked' : ''}`;
+                card.className = `ship-card ${isEquipped ? 'equipped' : ''}`;
                 
                 let btnText = isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`);
-                if (def.isSecret && !isPurchased) {
-                    btnText = '🔒 CLASSIFIED (Defeat Secret Anomaly Dual Bosses to Unlock)';
-                }
 
                 card.innerHTML = `
                     <div class="ship-header">
                         <div>
-                            <div class="ship-name" style="color: ${def.color};">${def.isSecret && !isPurchased ? '🔒 Classified Secret Warship' : def.name}</div>
+                            <div class="ship-name" style="color: ${def.color};">${def.name}</div>
                             <div class="ship-class">${def.class}</div>
                         </div>
-                        <div style="font-size: 28px;">${def.isSecret && !isPurchased ? '🔒' : def.specialIcon}</div>
+                        <div style="font-size: 28px;">${def.specialIcon}</div>
                     </div>
                     <div class="ship-stats-list">
                         <div class="ship-stat-row">
@@ -746,7 +714,7 @@ class SpaceCombatEngine {
                 `;
 
                 const actionBtn = card.querySelector('.btn-ship-action');
-                actionBtn.disabled = isEquipped || (def.isSecret && !isPurchased) || (!isPurchased && this.credits < def.price);
+                actionBtn.disabled = isEquipped || (!isPurchased && this.credits < def.price);
 
                 actionBtn.onclick = () => {
                     if (isEquipped) return;
@@ -1204,19 +1172,6 @@ class SpaceCombatEngine {
                 });
             });
             this.logTerminal('[ABILITY] Quantum Decoy Wingmen engaged target fleet!', 'agent');
-        } else if (this.selectedShipId === 'ship_secret') {
-            // Celestial Nova Barrage (8-Way Screen Vaporizer)
-            const angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
-            for (let i = 0; i < 8; i++) {
-                const a = angle + (i * Math.PI / 4);
-                this.projectiles.push({
-                    x: this.player.x, y: this.player.y,
-                    vx: Math.cos(a) * 15, vy: Math.sin(a) * 15,
-                    damage: 125, color: '#00ffff', radius: 9, isTorpedo: true
-                });
-            }
-            this.triggerScreenShake(18, 0.6);
-            this.logTerminal('[ABILITY] Celestial Nova Barrage vaporized target fleet!', 'agent');
         } else if (this.selectedShipId === 'ship4') {
             // Devastator Beam Sweep
             this.player.beamActiveTimer = 2.5;
@@ -1764,15 +1719,7 @@ class SpaceCombatEngine {
             const damage = shipDef.damage + (this.upgrades.damage * 10);
             const speed = 8.5;
 
-            if (this.selectedShipId === 'ship_secret') {
-                for (let a = -1; a <= 1; a++) {
-                    this.projectiles.push({
-                        x: this.player.x + (a * 14), y: this.player.y,
-                        vx: Math.cos(this.player.angle) * speed * 1.25, vy: Math.sin(this.player.angle) * speed * 1.25,
-                        damage: damage * 0.75, color: '#00ffff', radius: 5
-                    });
-                }
-            } else if (this.selectedShipId === 'ship4') {
+            if (this.selectedShipId === 'ship4') {
                 const perpX = -Math.sin(this.player.angle) * 12;
                 const perpY = Math.cos(this.player.angle) * 12;
                 this.projectiles.push({
@@ -1795,138 +1742,9 @@ class SpaceCombatEngine {
         }
     }
 
-    startSecretMission() {
-        this.currentLevel = 99; // Secret level indicator
-        this.applyPlayerStats();
-
-        // Spawn player ship safely at lower center of playing canvas
-        this.player.x = this.width / 2;
-        this.player.y = Math.min(this.height - 120, this.height * 0.75);
-        this.player.vx = 0;
-        this.player.vy = 0;
-        this.player.hull = this.player.maxHull;
-        this.player.shield = this.player.maxShield;
-
-        this.projectiles = [];
-        this.enemyProjectiles = [];
-        this.enemies = [];
-        this.asteroids = [];
-        this.particles = [];
-        this.pickups = [];
-        this.damageTextFx = [];
-
-        this.enemiesKilledCurrentLevel = 0;
-        this.levelOreEarned = 0;
-
-        this.hideAllModals();
-        this.bossActive = true;
-
-        const bossHud = document.getElementById('boss-hud');
-        if (bossHud) {
-            bossHud.classList.remove('hidden');
-            bossHud.classList.add('active');
-            bossHud.style.display = 'flex';
-        }
-
-        this.levelTargetKills = 2 + 4; // 2 Secret bosses + 4 escorts
-        document.getElementById('obj-text').innerText = 'TARGET: Defeat Both Secret Dual Bosses (3,000 HP Each) & Claim Celestial Warship!';
-        document.getElementById('wave-text').innerText = 'SECRET SECTOR: ANCIENT VOID NEXUS';
-
-        this.spawnSecretDualBosses();
-
-        this.isRunning = true;
-        this.isPaused = false;
-    }
-
-    spawnSecretDualBosses() {
-        window.soundSynth.playBossWarning();
-        this.triggerScreenShake(26, 1.0);
-
-        // Spawn Secret Dual Boss #1 directly on-screen in left upper sector
-        const b1 = {
-            id: 'secret_boss_1',
-            type: 'boss_dreadnought',
-            bossTier: 5,
-            x: this.width * 0.30,
-            y: 160,
-            targetY: 160,
-            vx: 0,
-            vy: 0,
-            radius: 85,
-            health: 3000,
-            maxHealth: 3000,
-            shield: 1000,
-            maxShield: 1000,
-            speed: 0.9,
-            color: '#ff00ff',
-            fireTimer: 0,
-            spawnTimer: 0,
-            attackIndex: 0,
-            phase: 1,
-            damage: 45
-        };
-
-        // Spawn Secret Dual Boss #2 directly on-screen in right upper sector
-        const b2 = {
-            id: 'secret_boss_2',
-            type: 'boss_dreadnought',
-            bossTier: 5,
-            x: this.width * 0.70,
-            y: 200,
-            targetY: 200,
-            vx: 0,
-            vy: 0,
-            radius: 85,
-            health: 3000,
-            maxHealth: 3000,
-            shield: 1000,
-            maxShield: 1000,
-            speed: 0.9,
-            color: '#00ffff',
-            fireTimer: 1.0,
-            spawnTimer: 1.0,
-            attackIndex: 0,
-            phase: 1,
-            damage: 45
-        };
-
-        this.enemies.push(b1);
-        this.enemies.push(b2);
-        this.bossEntity = b1;
-
-        // Spawn Escort Fleet directly on-screen
-        for (let i = 0; i < 4; i++) {
-            const offsetX = (i - 1.5) * 110;
-            this.enemies.push({
-                id: Math.random(),
-                type: 'frigate',
-                x: this.width / 2 + offsetX,
-                y: 110 + (i % 2 === 0 ? 0 : 35),
-                vx: 0, vy: 0,
-                radius: 28, health: 150, maxHealth: 150,
-                shield: 80, maxShield: 80, speed: 1.2,
-                color: '#ff00ff', fireTimer: Math.random() * 2,
-                fireInterval: 3.0, damage: 25
-            });
-        }
-
-        document.getElementById('boss-name').innerText = '⚔️ SECRET DUAL BOSSES (3,000 HP EACH)';
-        this.logTerminal('[WARNING] ANCIENT VOID NEXUS DUAL BOSSES ENGAGED!', 'danger');
-    }
-
     levelVictory() {
         this.isRunning = false;
         window.soundSynth.stopSpaceMusic();
-
-        // Unlock secret ship if victorious on secret level 99
-        if (this.currentLevel === 99) {
-            if (!this.purchasedShips.includes('ship_secret')) {
-                this.purchasedShips.push('ship_secret');
-                this.selectedShipId = 'ship_secret';
-                this.saveModeData();
-                this.logTerminal('[UNLOCKED] Astra Prime Celestia Celestial Warship added to your fleet!', 'agent');
-            }
-        }
 
         if (this.currentLevel >= this.unlockedLevel) {
             this.unlockedLevel = this.currentLevel + 1;
@@ -2210,27 +2028,7 @@ class SpaceCombatEngine {
         this.ctx.shadowColor = shipDef.color;
         this.ctx.shadowBlur = 12;
 
-        if (this.selectedShipId === 'ship_secret') {
-            // Celestial Ancient Warship (Glowing star-crown geometry)
-            this.ctx.beginPath();
-            this.ctx.moveTo(28, 0);
-            this.ctx.lineTo(10, -18);
-            this.ctx.lineTo(-20, -22);
-            this.ctx.lineTo(-12, -8);
-            this.ctx.lineTo(-24, 0);
-            this.ctx.lineTo(-12, 8);
-            this.ctx.lineTo(-20, 22);
-            this.ctx.lineTo(10, 18);
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.stroke();
-
-            // Celestial Core Glow
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.beginPath();
-            this.ctx.arc(4, 0, 5, 0, Math.PI * 2);
-            this.ctx.fill();
-        } else if (this.selectedShipId === 'ship4') {
+        if (this.selectedShipId === 'ship4') {
             // Supernova Dreadnought (Massive Quad-Wing Capital Hull)
             this.ctx.beginPath();
             this.ctx.moveTo(26, 0);
