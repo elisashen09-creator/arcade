@@ -1276,6 +1276,45 @@ class SpaceCombatEngine {
         if (this.player.invulnerableTimer > 0) this.player.invulnerableTimer -= dt;
         if (this.player.beamActiveTimer > 0) this.player.beamActiveTimer -= dt;
 
+        // Periodic Side-Spawning Shotgun Ship in Impossible Mode!
+        if (this.difficulty === 'impossible' && this.isRunning && !this.isPaused) {
+            this.shotgunSpawnTimer = (this.shotgunSpawnTimer || 0) + dt;
+            if (this.shotgunSpawnTimer >= 6.0) { // Every 6 seconds over time!
+                this.shotgunSpawnTimer = 0;
+
+                const spawnFromLeft = Math.random() < 0.5;
+                const spawnX = spawnFromLeft ? -40 : this.width + 40;
+                const spawnY = Math.random() * (this.height * 0.45) + 75;
+
+                const levelNum = this.currentLevel || 1;
+                const hpMultiplier = (1 + (levelNum * 0.35)) * 1.75;
+                const dmgMultiplier = (1 + (levelNum * 0.25)) * 1.50;
+
+                this.enemies.push({
+                    id: Math.random(),
+                    type: 'shotgun_gunship',
+                    x: spawnX,
+                    y: spawnY,
+                    vx: spawnFromLeft ? 2.2 : -2.2,
+                    vy: 0,
+                    radius: 26,
+                    health: 170 * hpMultiplier,
+                    maxHealth: 170 * hpMultiplier,
+                    shield: 70 * hpMultiplier,
+                    maxShield: 70 * hpMultiplier,
+                    speed: 2.0,
+                    color: '#ff9900',
+                    fireTimer: 0,
+                    fireInterval: 2.4,
+                    damage: 28 * dmgMultiplier
+                });
+
+                this.levelTargetKills++;
+                this.addDamageText(spawnFromLeft ? 70 : this.width - 70, spawnY, 'AMBUSH: SHOTGUN SHIP! ⚡', '#ff9900');
+                this.logTerminal('[AMBUSH] Side-spawning Shotgun Ship swooped into sector!', 'danger');
+            }
+        }
+
         // Starfield
         this.starfield.forEach(star => {
             star.y += star.speed;
