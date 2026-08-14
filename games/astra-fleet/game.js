@@ -1745,10 +1745,13 @@ class SpaceCombatEngine {
         this.currentLevel = 99; // Secret level indicator
         this.applyPlayerStats();
 
+        // Spawn player ship safely at lower center of playing canvas
         this.player.x = this.width / 2;
-        this.player.y = this.height / 2;
+        this.player.y = Math.min(this.height - 120, this.height * 0.75);
         this.player.vx = 0;
         this.player.vy = 0;
+        this.player.hull = this.player.maxHull;
+        this.player.shield = this.player.maxShield;
 
         this.projectiles = [];
         this.enemyProjectiles = [];
