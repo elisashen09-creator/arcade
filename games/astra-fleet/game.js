@@ -1523,8 +1523,8 @@ class SpaceCombatEngine {
                     window.soundSynth.playEnemyLaser();
 
                     if (enemy.type === 'shotgun_gunship') {
-                        // 5-Way Shotgun Plasma Burst Salvo (Heavy Spreading Salvo!)
-                        for (let spread = -0.4; spread <= 0.4; spread += 0.2) {
+                        // 3-Way Shotgun Plasma Burst Salvo (3 Bullets!)
+                        for (let spread = -0.25; spread <= 0.25; spread += 0.25) {
                             this.enemyProjectiles.push({
                                 x: enemy.x, y: enemy.y,
                                 vx: Math.cos(angle + spread) * 3.4, vy: Math.sin(angle + spread) * 3.4,
