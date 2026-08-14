@@ -1794,16 +1794,17 @@ class SpaceCombatEngine {
         window.soundSynth.playBossWarning();
         this.triggerScreenShake(26, 1.0);
 
+        // Spawn Secret Dual Boss #1 directly on-screen in left upper sector
         const b1 = {
             id: 'secret_boss_1',
             type: 'boss_dreadnought',
             bossTier: 5,
-            x: this.width * 0.32,
-            y: -120,
-            targetY: 180,
+            x: this.width * 0.30,
+            y: 160,
+            targetY: 160,
             vx: 0,
             vy: 0,
-            radius: 95,
+            radius: 85,
             health: 3000,
             maxHealth: 3000,
             shield: 1000,
@@ -1817,16 +1818,17 @@ class SpaceCombatEngine {
             damage: 45
         };
 
+        // Spawn Secret Dual Boss #2 directly on-screen in right upper sector
         const b2 = {
             id: 'secret_boss_2',
             type: 'boss_dreadnought',
             bossTier: 5,
-            x: this.width * 0.68,
-            y: -160,
-            targetY: 220,
+            x: this.width * 0.70,
+            y: 200,
+            targetY: 200,
             vx: 0,
             vy: 0,
-            radius: 95,
+            radius: 85,
             health: 3000,
             maxHealth: 3000,
             shield: 1000,
@@ -1844,14 +1846,14 @@ class SpaceCombatEngine {
         this.enemies.push(b2);
         this.bossEntity = b1;
 
-        // Escort Fleet
+        // Spawn Escort Fleet directly on-screen
         for (let i = 0; i < 4; i++) {
-            const offsetX = (i - 1.5) * 120;
+            const offsetX = (i - 1.5) * 110;
             this.enemies.push({
                 id: Math.random(),
                 type: 'frigate',
                 x: this.width / 2 + offsetX,
-                y: -100 - (i * 25),
+                y: 110 + (i % 2 === 0 ? 0 : 35),
                 vx: 0, vy: 0,
                 radius: 28, health: 150, maxHealth: 150,
                 shield: 80, maxShield: 80, speed: 1.2,
