@@ -836,6 +836,7 @@ class SpaceCombatEngine {
 
         this.enemiesKilledCurrentLevel = 0;
         this.levelOreEarned = 0;
+        this.levelSpawned = false;
 
         // HIDE ALL SCREENS & OVERLAYS COMPLETELY
         this.hideAllModals();
@@ -899,6 +900,7 @@ class SpaceCombatEngine {
 
         this.isRunning = true;
         this.isPaused = false;
+        this.levelSpawned = true;
 
         window.soundSynth.startSpaceMusic();
         this.logTerminal(`[MISSION] Entering Sector ${levelNumber}: ${missionName}. Systems armed!`, 'agent');
@@ -1668,8 +1670,8 @@ class SpaceCombatEngine {
         this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= dt; });
         this.particles = this.particles.filter(p => p.life > 0);
 
-        // Check Victory Condition (Requires target kill count AND 0 active enemy ships alive on field!)
-        if (this.enemiesKilledCurrentLevel >= this.levelTargetKills && this.enemies.length === 0) {
+        // Check Victory Condition (Completes level immediately when 0 enemy ships remain on screen!)
+        if (this.levelSpawned && this.enemies.length === 0) {
             this.levelVictory();
         }
 
