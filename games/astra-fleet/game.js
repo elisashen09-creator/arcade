@@ -1164,7 +1164,7 @@ class SpaceCombatEngine {
             if (b === 0) this.bossEntity = bEntity;
         }
 
-        // Spawn Escort Fleet alongside boss (30 Escort Ships spawning around screen edges like a normal level!)
+        // Spawn Escort Fleet alongside boss (30 Escort Ships - strongest Cruiser class with doubled HP & Shield!)
         const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
         for (let i = 0; i < escortCount; i++) {
             let spawnX, spawnY;
@@ -1176,13 +1176,8 @@ class SpaceCombatEngine {
                 spawnY = Math.random() < 0.5 ? -40 : this.height + 40;
             }
 
-            const r = Math.random();
-            let eType = 'gunship';
-            if (r > 0.70) eType = 'cruiser';
-            else if (r > 0.45) eType = 'frigate';
-            else if (r > 0.25) eType = 'interceptor';
-            else if (r > 0.12) eType = 'bomber';
-
+            // Strongest Escort Ship: Heavy Void Cruiser with DOUBLED Health (500 HP) and DOUBLED Shield (240 Shield)!
+            const eType = 'cruiser';
             this.enemies.push({
                 id: Math.random(),
                 type: eType,
@@ -1190,16 +1185,16 @@ class SpaceCombatEngine {
                 y: spawnY,
                 vx: 0,
                 vy: 0,
-                radius: eType === 'cruiser' ? 34 : (eType === 'frigate' ? 28 : (eType === 'bomber' ? 22 : 20)),
-                health: 250, maxHealth: 250,
-                shield: 120, maxShield: 120, speed: 1.4,
-                color: eType === 'cruiser' ? '#ff0055' : (eType === 'frigate' ? '#00f0ff' : (eType === 'bomber' ? '#ff3300' : '#9d00ff')),
+                radius: 34,
+                health: 500, maxHealth: 500,
+                shield: 240, maxShield: 240, speed: 1.4,
+                color: '#ff0055',
                 fireTimer: Math.random() * 2,
-                fireInterval: 2.8, damage: 32
+                fireInterval: 2.8, damage: 36
             });
         }
 
-        // Spawn 2 Shotgun Ships for The Mission mode boss fights!
+        // Spawn 2 Shotgun Ships for The Mission mode boss fights (Doubled HP 600 & Shield 300!)
         if (this.difficulty === 'mission') {
             for (let s = 0; s < 2; s++) {
                 const sX = s === 0 ? -40 : this.width + 40;
@@ -1209,9 +1204,9 @@ class SpaceCombatEngine {
                     x: sX,
                     y: 140,
                     vx: s === 0 ? 2.0 : -2.0, vy: 0,
-                    radius: 26, health: 300, maxHealth: 300,
-                    shield: 150, maxShield: 150, speed: 2.0,
-                    color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 32
+                    radius: 26, health: 600, maxHealth: 600,
+                    shield: 300, maxShield: 300, speed: 2.0,
+                    color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 34
                 });
             }
         }
@@ -1614,7 +1609,7 @@ class SpaceCombatEngine {
                     this.logTerminal(`[WARNING] BOSS SUMMONED REINFORCEMENT FLEET!`, 'danger');
 
                     if (this.difficulty === 'mission') {
-                        // Spawn 2 Shotgun Ships during The Mission boss fight!
+                        // Spawn 2 Shotgun Ships during The Mission boss fight with doubled HP (640 HP) & Shield (320 Shield)!
                         for (let s = 0; s < 2; s++) {
                             const spawnX = s === 0 ? -40 : this.width + 40;
                             const spawnY = Math.random() * (this.height * 0.4) + 80;
@@ -1624,15 +1619,15 @@ class SpaceCombatEngine {
                                 x: spawnX,
                                 y: spawnY,
                                 vx: s === 0 ? 2.2 : -2.2, vy: 0,
-                                radius: 26, health: 320, maxHealth: 320,
-                                shield: 160, maxShield: 160, speed: 2.0,
-                                color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 34
+                                radius: 26, health: 640, maxHealth: 640,
+                                shield: 320, maxShield: 320, speed: 2.0,
+                                color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 36
                             });
                         }
                     } else {
                         const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
                         for (let c = 0; c < spawnCount; c++) {
-                            const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
+                            const rType = 'cruiser';
                             const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
                             const spawnY = Math.random() * (this.height * 0.5) + 60;
 
@@ -1642,11 +1637,12 @@ class SpaceCombatEngine {
                                 x: spawnX,
                                 y: spawnY,
                                 vx: 0, vy: 0,
-                                radius: rType === 'shotgun_gunship' ? 26 : (rType === 'gunship' ? 24 : 20),
-                                health: 150, maxHealth: 150,
+                                radius: 34,
+                                health: 500, maxHealth: 500,
+                                shield: 240, maxShield: 240,
                                 speed: 1.8,
-                                color: rType === 'shotgun_gunship' ? '#ff9900' : (rType === 'gunship' ? '#ffb700' : '#9d00ff'),
-                                fireTimer: 0, fireInterval: rType === 'shotgun_gunship' ? 2.4 : 2.8, damage: 28
+                                color: '#ff0055',
+                                fireTimer: 0, fireInterval: 2.8, damage: 36
                             });
                         }
                     }
