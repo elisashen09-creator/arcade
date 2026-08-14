@@ -277,15 +277,34 @@ class SpaceCombatEngine {
     updateDiffUI() {
         const btnNormal = document.getElementById('diff-btn-normal');
         const btnHard = document.getElementById('diff-btn-hard');
+        const btnImpossible = document.getElementById('diff-btn-impossible');
         const hudBadge = document.getElementById('hud-diff-badge');
 
-        if (this.difficulty === 'hard') {
-            if (btnNormal && btnHard) {
-                btnNormal.style.border = '2px solid #555';
-                btnNormal.style.background = 'rgba(0, 240, 255, 0.05)';
-                btnNormal.style.color = '#888';
-                btnNormal.style.boxShadow = 'none';
+        const resetBtn = (btn) => {
+            if (!btn) return;
+            btn.style.border = '2px solid #555';
+            btn.style.background = 'rgba(255, 255, 255, 0.03)';
+            btn.style.color = '#888';
+            btn.style.boxShadow = 'none';
+        };
 
+        resetBtn(btnNormal);
+        resetBtn(btnHard);
+        resetBtn(btnImpossible);
+
+        if (this.difficulty === 'impossible') {
+            if (btnImpossible) {
+                btnImpossible.style.border = '2px solid #9d00ff';
+                btnImpossible.style.background = 'rgba(157, 0, 255, 0.35)';
+                btnImpossible.style.color = '#ff0055';
+                btnImpossible.style.boxShadow = '0 0 20px rgba(157, 0, 255, 0.8)';
+            }
+            if (hudBadge) {
+                hudBadge.innerText = '☠️ IMPOSSIBLE';
+                hudBadge.style.color = '#ff0055';
+            }
+        } else if (this.difficulty === 'hard') {
+            if (btnHard) {
                 btnHard.style.border = '2px solid #ff0055';
                 btnHard.style.background = 'rgba(255, 0, 85, 0.3)';
                 btnHard.style.color = '#ff0055';
@@ -296,16 +315,11 @@ class SpaceCombatEngine {
                 hudBadge.style.color = '#ff0055';
             }
         } else {
-            if (btnNormal && btnHard) {
+            if (btnNormal) {
                 btnNormal.style.border = '2px solid #00f0ff';
                 btnNormal.style.background = 'rgba(0, 240, 255, 0.3)';
                 btnNormal.style.color = '#00f0ff';
                 btnNormal.style.boxShadow = '0 0 18px rgba(0, 240, 255, 0.6)';
-
-                btnHard.style.border = '2px solid #555';
-                btnHard.style.background = 'rgba(255, 0, 85, 0.05)';
-                btnHard.style.color = '#888';
-                btnHard.style.boxShadow = 'none';
             }
             if (hudBadge) {
                 hudBadge.innerText = '🟢 NORMAL';
@@ -388,6 +402,7 @@ class SpaceCombatEngine {
 
         const btnNormal = document.getElementById('diff-btn-normal');
         const btnHard = document.getElementById('diff-btn-hard');
+        const btnImpossible = document.getElementById('diff-btn-impossible');
         if (btnNormal) {
             btnNormal.onclick = (e) => {
                 e.stopPropagation();
@@ -400,6 +415,13 @@ class SpaceCombatEngine {
                 e.stopPropagation();
                 this.setDifficulty('hard');
                 this.logTerminal('[MODE] Switched to 🔥 HARD MODE DIFFICULTY!', 'danger');
+            };
+        }
+        if (btnImpossible) {
+            btnImpossible.onclick = (e) => {
+                e.stopPropagation();
+                this.setDifficulty('impossible');
+                this.logTerminal('[MODE] Switched to ☠️ IMPOSSIBLE MODE DIFFICULTY!', 'danger');
             };
         }
 
@@ -512,7 +534,8 @@ class SpaceCombatEngine {
         container.innerHTML = '';
 
         for (let i = 1; i <= 30; i++) {
-            const isBoss = (i % 5 === 0);
+            const isBoss = (this.difficulty === 'impossible' ? (i % 3 === 0) : (i % 5 === 0));
+            const isDualBoss = (i === 15 || i === 30);
             const isUnlocked = (i <= this.unlockedLevel);
             const isCompleted = this.completedLevels.includes(i);
             const missionName = this.missionNames[i] || `SECTOR ${i}`;
@@ -526,14 +549,14 @@ class SpaceCombatEngine {
             let statusTag = 'LOCKED';
             let tagClass = 'locked';
             if (isCompleted) { statusTag = 'COMPLETED ✓'; tagClass = 'completed'; }
-            else if (isUnlocked) { statusTag = isBoss ? 'BOSS TARGET 👑' : 'UNLOCKED'; tagClass = isBoss ? 'boss' : 'unlocked'; }
+            else if (isUnlocked) { statusTag = isDualBoss ? '⚔️ DUAL BOSS 👑' : (isBoss ? 'BOSS TARGET 👑' : 'UNLOCKED'); tagClass = isBoss ? 'boss' : 'unlocked'; }
 
             node.innerHTML = `
                 <div class="node-header">
                     <span class="node-number">LEVEL ${i}</span>
                     <span class="node-status-tag ${tagClass}">${statusTag}</span>
                 </div>
-                <div class="node-title">${isBoss ? '👑 ' + missionName : missionName}</div>
+                <div class="node-title">${isDualBoss ? '⚔️ ' + missionName : (isBoss ? '👑 ' + missionName : missionName)}</div>
             `;
 
             node.onclick = () => {
@@ -814,7 +837,8 @@ class SpaceCombatEngine {
         // HIDE ALL SCREENS & OVERLAYS COMPLETELY
         this.hideAllModals();
 
-        const isBossLevel = (levelNumber % 5 === 0);
+        const isBossLevel = (this.difficulty === 'impossible' ? (levelNumber % 3 === 0) : (levelNumber % 5 === 0));
+        const isDualBoss = (levelNumber === 15 || levelNumber === 30);
         this.bossActive = isBossLevel;
 
         const bossHud = document.getElementById('boss-hud');
@@ -831,17 +855,22 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)) * (this.difficulty === 'hard' ? 2 : 1);
-            this.levelTargetKills = 1 + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat Boss & Destroy All ${escortCount} Escorts ${this.difficulty === 'hard' ? '(🔥 HARD)' : ''}`;
+            const escortCount = (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
+            const bossCount = isDualBoss ? 2 : 1;
+            this.levelTargetKills = bossCount + escortCount;
+            const diffTag = this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE)' : (this.difficulty === 'hard' ? '(🔥 HARD)' : '');
+            document.getElementById('obj-text').innerText = `TARGET: Defeat ${isDualBoss ? '2 DUAL BOSSES' : 'Boss'} & Destroy All ${escortCount} Escorts ${diffTag}`;
             this.spawnBoss(levelNumber);
         } else {
-            let totalEnemies = Math.min(25, 6 + (levelNumber * 2));
-            if (this.difficulty === 'hard') {
-                totalEnemies = Math.floor(totalEnemies * 1.8); // 80% more ships on normal levels!
+            let totalEnemies = Math.min(60, 6 + Math.floor(levelNumber * 2.2));
+            if (this.difficulty === 'impossible') {
+                totalEnemies = Math.floor(totalEnemies * 2.5); // 150% more ships on Impossible!
+            } else if (this.difficulty === 'hard') {
+                totalEnemies = Math.floor(totalEnemies * 1.8);
             }
             this.levelTargetKills = totalEnemies;
-            document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''}`;
+            const diffTag = this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : '');
+            document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${diffTag}`;
             this.spawnLevelEnemies(levelNumber, totalEnemies);
         }
 
@@ -889,7 +918,15 @@ class SpaceCombatEngine {
             let type = 'scout';
             const r = Math.random();
 
-            if (this.difficulty === 'hard') {
+            if (this.difficulty === 'impossible') {
+                // Impossible mode: 90% high-tier spawns (cruiser, frigate, interceptor, bomber, gunship)!
+                if (r > 0.72) type = 'cruiser';
+                else if (r > 0.52) type = 'frigate';
+                else if (r > 0.35) type = 'interceptor';
+                else if (r > 0.20) type = 'bomber';
+                else if (r > 0.08) type = 'gunship';
+                else type = 'scout';
+            } else if (this.difficulty === 'hard') {
                 // Hard mode: Stronger ships spawn much more frequently across ALL levels!
                 if (r > 0.80) type = 'cruiser';
                 else if (r > 0.62) type = 'frigate';
@@ -907,7 +944,10 @@ class SpaceCombatEngine {
 
             let hpMultiplier = 1 + (levelNumber * 0.35);
             let dmgMultiplier = 1 + (levelNumber * 0.25);
-            if (this.difficulty === 'hard') {
+            if (this.difficulty === 'impossible') {
+                hpMultiplier *= 1.75; // 75% extra HP in Impossible mode
+                dmgMultiplier *= 1.50; // 50% extra damage in Impossible mode
+            } else if (this.difficulty === 'hard') {
                 hpMultiplier *= 1.35; // 35% extra HP in Hard mode
                 dmgMultiplier *= 1.25; // 25% extra damage in Hard mode
             }
@@ -941,12 +981,12 @@ class SpaceCombatEngine {
 
     spawnBoss(levelNumber) {
         window.soundSynth.playBossWarning();
-        this.triggerScreenShake(20, 0.7);
+        this.triggerScreenShake(24, 0.8);
 
         let bossName = "VOID LEVIATHAN";
         let bossColor = "#00f0ff";
-        let bossHpMult = this.difficulty === 'hard' ? 1.85 : 1.0; // 85% more HP for bosses in Hard mode!
-        let bossShieldMult = this.difficulty === 'hard' ? 1.85 : 1.0;
+        let bossHpMult = this.difficulty === 'impossible' ? 2.5 : (this.difficulty === 'hard' ? 1.85 : 1.0);
+        let bossShieldMult = this.difficulty === 'impossible' ? 2.5 : (this.difficulty === 'hard' ? 1.85 : 1.0);
         let baseHp = 2800 * bossHpMult;
         let baseShield = 1000 * bossShieldMult;
         let radius = 70;
@@ -989,58 +1029,41 @@ class SpaceCombatEngine {
             tier = 2;
         }
 
-        this.bossEntity = {
-            id: 'boss',
-            type: 'boss_dreadnought',
-            bossTier: tier,
-            x: this.width / 2,
-            y: -100,
-            targetY: 180,
-            vx: 0,
-            vy: 0,
-            radius: radius,
-            health: baseHp,
-            maxHealth: baseHp,
-            shield: baseShield,
-            maxShield: baseShield,
-            speed: 0.8,
-            color: bossColor,
-            fireTimer: 0,
-            spawnTimer: 0,
-            attackIndex: 0,
-            phase: 1,
-            damage: tier === 3 ? 75 : (tier === 2 ? 55 : 40)
-        };
+        const isDualBoss = (levelNumber === 15 || levelNumber === 30);
+        const bossCount = isDualBoss ? 2 : 1;
 
-        this.enemies.push(this.bossEntity);
+        for (let b = 0; b < bossCount; b++) {
+            const spawnX = bossCount === 1 ? this.width / 2 : (b === 0 ? this.width * 0.32 : this.width * 0.68);
+            const targetY = bossCount === 1 ? 180 : (b === 0 ? 170 : 210);
 
-        // Spawn Escort Squadron alongside the Boss!
-        const escortCount = tier === 3 ? 6 : (tier === 2 ? 4 : 2);
-        for (let i = 0; i < escortCount; i++) {
-            const escortType = i % 3 === 0 ? 'frigate' : (i % 3 === 1 ? 'gunship' : 'scout');
-            const offsetX = (i - (escortCount - 1) / 2) * 110;
-            this.enemies.push({
-                id: Math.random(),
-                type: escortType,
-                x: this.width / 2 + offsetX,
-                y: -120 - (i * 20),
+            const bEntity = {
+                id: 'boss_' + b,
+                type: 'boss_dreadnought',
+                bossTier: tier,
+                x: spawnX,
+                y: -120 - (b * 60),
+                targetY: targetY,
                 vx: 0,
                 vy: 0,
-                radius: escortType === 'frigate' ? 28 : 20,
-                health: 120,
-                maxHealth: 120,
-                shield: escortType === 'frigate' ? 60 : 0,
-                maxShield: escortType === 'frigate' ? 60 : 0,
-                speed: 1.2,
-                color: escortType === 'frigate' ? '#00f0ff' : '#ffb700',
+                radius: radius,
+                health: baseHp,
+                maxHealth: baseHp,
+                shield: baseShield,
+                maxShield: baseShield,
+                speed: 0.8,
+                color: bossColor,
                 fireTimer: Math.random() * 2,
-                fireInterval: 3.2,
-                damage: 22
-            });
+                spawnTimer: Math.random() * 2,
+                attackIndex: 0,
+                phase: 1,
+                damage: 35 + (tier * 10)
+            };
+            this.enemies.push(bEntity);
+            if (b === 0) this.bossEntity = bEntity;
         }
 
-        document.getElementById('boss-name').innerText = `${bossName} (LEVEL ${levelNumber} BOSS)`;
-        this.logTerminal(`[WARNING] BOSS DETECTED! ${bossName} INCOMING WITH ESCORT FLEET!`, 'danger');
+        document.getElementById('boss-name').innerText = `${isDualBoss ? '⚔️ DUAL BOSS: ' : ''}${bossName} (LEVEL ${levelNumber})`;
+        this.logTerminal(`[WARNING] ${isDualBoss ? 'DUAL DREADNOUGHT BOSSES DETECTED!' : 'BOSS DETECTED!'} ${bossName} INCOMING WITH ESCORT FLEET!`, 'danger');
     }
 
     // --- CONTROLS & SPECIAL ABILITIES ---
@@ -1673,7 +1696,9 @@ class SpaceCombatEngine {
         }
 
         let bonus = this.currentLevel * 150;
-        if (this.difficulty === 'hard') {
+        if (this.difficulty === 'impossible') {
+            bonus = Math.floor(bonus * 3.0); // 3x Ore Bonus on Impossible mode!
+        } else if (this.difficulty === 'hard') {
             bonus = Math.floor(bonus * 2.0); // 2x Ore Bonus on Hard mode!
         }
         this.credits += bonus;
@@ -1736,10 +1761,13 @@ class SpaceCombatEngine {
             cdText.innerText = 'READY';
         }
 
-        if (this.bossActive && this.bossEntity) {
-            const pct = Math.max(0, (this.bossEntity.health / this.bossEntity.maxHealth)) * 100;
+        const bossEntities = this.enemies.filter(e => e.type === 'boss_dreadnought');
+        if (bossEntities.length > 0) {
+            const totalHp = bossEntities.reduce((sum, b) => sum + Math.max(0, b.health), 0);
+            const totalMaxHp = bossEntities.reduce((sum, b) => sum + b.maxHealth, 0);
+            const pct = Math.max(0, (totalHp / totalMaxHp)) * 100;
             document.getElementById('boss-health-fill').style.width = `${pct}%`;
-            document.getElementById('boss-health-text').innerText = `${Math.ceil(Math.max(0, this.bossEntity.health))} / ${this.bossEntity.maxHealth} HP`;
+            document.getElementById('boss-health-text').innerText = `${bossEntities.length > 1 ? '⚔️ DUAL BOSSES: ' : ''}${Math.ceil(totalHp)} / ${totalMaxHp} HP`;
         }
 
         this.renderRadar();
