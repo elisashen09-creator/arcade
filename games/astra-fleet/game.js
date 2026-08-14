@@ -1177,6 +1177,23 @@ class SpaceCombatEngine {
             });
         }
 
+        // Spawn 2 Shotgun Ships for The Mission mode boss fights!
+        if (this.difficulty === 'mission') {
+            for (let s = 0; s < 2; s++) {
+                const sX = s === 0 ? -40 : this.width + 40;
+                this.enemies.push({
+                    id: Math.random(),
+                    type: 'shotgun_gunship',
+                    x: sX,
+                    y: 140,
+                    vx: s === 0 ? 2.0 : -2.0, vy: 0,
+                    radius: 26, health: 300, maxHealth: 300,
+                    shield: 150, maxShield: 150, speed: 2.0,
+                    color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 32
+                });
+            }
+        }
+
         document.getElementById('boss-name').innerText = `${isDualBoss ? '⚔️ DUAL BOSS: ' : ''}${bossName} (LEVEL ${levelNumber})`;
         this.logTerminal(`[WARNING] ${isDualBoss ? 'DUAL DREADNOUGHT BOSSES DETECTED!' : 'BOSS DETECTED!'} ${bossName} INCOMING WITH ${escortCount} ESCORT SHIPS!`, 'danger');
     }
@@ -1566,7 +1583,7 @@ class SpaceCombatEngine {
                     }
                 }
                 // Continuous Reinforcement Dropship Spawning over time as fight progresses
-                const spawnInterval = this.difficulty === 'hard' ? 5.0 : 10.0; // Doubled spawning speed on boss levels (5s vs 10s)!
+                const spawnInterval = (this.difficulty === 'mission' ? 6.0 : (this.difficulty === 'hard' ? 5.0 : 10.0));
                 enemy.spawnTimer = (enemy.spawnTimer || 0) + dt;
                 if (enemy.spawnTimer >= spawnInterval) {
                     enemy.spawnTimer = 0;
@@ -1574,25 +1591,42 @@ class SpaceCombatEngine {
                     this.addDamageText(enemy.x, enemy.y, 'WARP DROPSHIP INBOUND! 🛸', '#ffb700');
                     this.logTerminal(`[WARNING] BOSS SUMMONED REINFORCEMENT FLEET!`, 'danger');
 
-                    const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
-                    for (let c = 0; c < spawnCount; c++) {
-                        const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
-                        const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
-                        const spawnY = Math.random() * (this.height * 0.5) + 60;
+                    if (this.difficulty === 'mission') {
+                        // Spawn 2 Shotgun Ships during The Mission boss fight!
+                        for (let s = 0; s < 2; s++) {
+                            const spawnX = s === 0 ? -40 : this.width + 40;
+                            const spawnY = Math.random() * (this.height * 0.4) + 80;
+                            this.enemies.push({
+                                id: Math.random(),
+                                type: 'shotgun_gunship',
+                                x: spawnX,
+                                y: spawnY,
+                                vx: s === 0 ? 2.2 : -2.2, vy: 0,
+                                radius: 26, health: 320, maxHealth: 320,
+                                shield: 160, maxShield: 160, speed: 2.0,
+                                color: '#ff9900', fireTimer: 0, fireInterval: 2.4, damage: 34
+                            });
+                        }
+                    } else {
+                        const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
+                        for (let c = 0; c < spawnCount; c++) {
+                            const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
+                            const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
+                            const spawnY = Math.random() * (this.height * 0.5) + 60;
 
-                        this.enemies.push({
-                            id: Math.random(),
-                            type: rType,
-                            x: spawnX,
-                            y: spawnY,
-                            vx: 0, vy: 0,
-                            radius: rType === 'shotgun_gunship' ? 26 : (rType === 'gunship' ? 24 : 20),
-                            health: 150, maxHealth: 150,
-                            speed: 1.8,
-                            color: rType === 'shotgun_gunship' ? '#ff9900' : (rType === 'gunship' ? '#ffb700' : '#9d00ff'),
-                            fireTimer: 0, fireInterval: rType === 'shotgun_gunship' ? 2.4 : 2.8, damage: 28
-                        });
-                        this.levelTargetKills++;
+                            this.enemies.push({
+                                id: Math.random(),
+                                type: rType,
+                                x: spawnX,
+                                y: spawnY,
+                                vx: 0, vy: 0,
+                                radius: rType === 'shotgun_gunship' ? 26 : (rType === 'gunship' ? 24 : 20),
+                                health: 150, maxHealth: 150,
+                                speed: 1.8,
+                                color: rType === 'shotgun_gunship' ? '#ff9900' : (rType === 'gunship' ? '#ffb700' : '#9d00ff'),
+                                fireTimer: 0, fireInterval: rType === 'shotgun_gunship' ? 2.4 : 2.8, damage: 28
+                            });
+                        }
                     }
                 }
             } else {
