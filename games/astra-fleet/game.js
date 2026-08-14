@@ -36,13 +36,28 @@ class SpaceCombatEngine {
             12: "DARK MATTER GRAVEYARD",
             13: "HYPERION CHRONO GATE",
             14: "NEBULA PRIME APEX",
-            15: "OMEGA VOID GOD DREADNOUGHT"
+            15: "OMEGA VOID GOD DREADNOUGHT",
+            16: "SINGULARITY EVENT HORIZON",
+            17: "CYBERNETIC CORE INVASION",
+            18: "ABYSSAL VOID NEXUS",
+            19: "QUANTUM RIFT ANOMALY",
+            20: "HYPERION CHRONO OVERLORD",
+            21: "SUPERNOVA BLAST ZONE",
+            22: "NEBULA PRIME RUINS",
+            23: "VOID CORSAIR FLOTILLA",
+            24: "DARK STEALTH CITADEL",
+            25: "DARK MATTER GRAVEYARD ARCHON",
+            26: "PULSAR SHADOW REALM",
+            27: "COSMIC CATACLYSM CORRIDOR",
+            28: "TITANIC SIEGE BATTALION",
+            29: "APOCALYPSE PRELUDE GATE",
+            30: "VOID GOD APOCALYPSE PRIME"
         };
 
         // Load Mode-Specific Data (Map Progress & Hangar Upgrades per mode)
         this.loadModeData();
 
-        // Definitions of Player Ships
+        // Definitions of Player Ships (7 Unique Fleet Warships)
         this.shipDefinitions = {
             ship1: {
                 id: 'ship1',
@@ -57,10 +72,28 @@ class SpaceCombatEngine {
                 damage: 38,
                 fireRateDelay: 0.55,
                 specialName: 'PHOTON TORPEDO',
-                specialSub: 'Explosive Area Blast',
+                specialSub: 'Explosive Area Salvo',
                 specialIcon: '💣',
                 specialCdMax: 6.0,
                 color: '#00f0ff'
+            },
+            ship1_5: {
+                id: 'ship1_5',
+                name: 'Valkyrie Gunship',
+                class: 'TACTICAL GUNSHIP',
+                price: 4500,
+                speed: 4.8,
+                hull: 170,
+                shield: 100,
+                shieldRegen: 0.11,
+                hullRegen: 0.04,
+                damage: 46,
+                fireRateDelay: 0.48,
+                specialName: 'QUAD BARRAGE',
+                specialSub: '5-Shot Spreading Salvo',
+                specialIcon: '⚡',
+                specialCdMax: 7.0,
+                color: '#00ffcc'
             },
             ship2: {
                 id: 'ship2',
@@ -80,6 +113,24 @@ class SpaceCombatEngine {
                 specialCdMax: 12.0,
                 color: '#9d00ff'
             },
+            ship2_5: {
+                id: 'ship2_5',
+                name: 'Hyperion Battlecruiser',
+                class: 'PLASMA BATTALION CRUISER',
+                price: 15000,
+                speed: 3.8,
+                hull: 280,
+                shield: 180,
+                shieldRegen: 0.14,
+                hullRegen: 0.045,
+                damage: 64,
+                fireRateDelay: 0.45,
+                specialName: 'ION PULSE SURGE',
+                specialSub: '450px EMP Stasis Wave',
+                specialIcon: '🌊',
+                specialCdMax: 9.0,
+                color: '#ff0055'
+            },
             ship3: {
                 id: 'ship3',
                 name: 'Phantom Interceptor',
@@ -97,6 +148,24 @@ class SpaceCombatEngine {
                 specialIcon: '⚡',
                 specialCdMax: 8.0,
                 color: '#00ff66'
+            },
+            ship3_5: {
+                id: 'ship3_5',
+                name: 'Eclipse Voidbringer',
+                class: 'VOID STEALTH WARSHIP',
+                price: 35000,
+                speed: 4.6,
+                hull: 310,
+                shield: 220,
+                shieldRegen: 0.16,
+                hullRegen: 0.04,
+                damage: 78,
+                fireRateDelay: 0.34,
+                specialName: 'QUANTUM WINGMEN',
+                specialSub: 'Deploy Decoy Drones',
+                specialIcon: '🛸',
+                specialCdMax: 11.0,
+                color: '#ff3399'
             },
             ship4: {
                 id: 'ship4',
@@ -442,7 +511,7 @@ class SpaceCombatEngine {
         if (!container) return;
         container.innerHTML = '';
 
-        for (let i = 1; i <= 15; i++) {
+        for (let i = 1; i <= 30; i++) {
             const isBoss = (i % 5 === 0);
             const isUnlocked = (i <= this.unlockedLevel);
             const isCompleted = this.completedLevels.includes(i);
@@ -883,7 +952,28 @@ class SpaceCombatEngine {
         let radius = 70;
         let tier = 1;
 
-        if (levelNumber >= 15) {
+        if (levelNumber >= 30) {
+            bossName = "VOID GOD APOCALYPSE PRIME";
+            bossColor = "#ff0055";
+            baseHp = 32000 * bossHpMult;
+            baseShield = 8000 * bossShieldMult;
+            radius = 110;
+            tier = 6;
+        } else if (levelNumber >= 25) {
+            bossName = "DARK MATTER GRAVEYARD ARCHON";
+            bossColor = "#e000ff";
+            baseHp = 22000 * bossHpMult;
+            baseShield = 5500 * bossShieldMult;
+            radius = 100;
+            tier = 5;
+        } else if (levelNumber >= 20) {
+            bossName = "HYPERION CHRONO OVERLORD";
+            bossColor = "#00ffcc";
+            baseHp = 15000 * bossHpMult;
+            baseShield = 4000 * bossShieldMult;
+            radius = 95;
+            tier = 4;
+        } else if (levelNumber >= 15) {
             bossName = "OMEGA VOID GOD DREADNOUGHT";
             bossColor = "#ffb700";
             baseHp = 9500 * bossHpMult;
@@ -1010,6 +1100,44 @@ class SpaceCombatEngine {
             }
             this.triggerScreenShake(12, 0.4);
             this.logTerminal('[ABILITY] EMP Shockwave detonated!', 'agent');
+        } else if (this.selectedShipId === 'ship1_5') {
+            // Quad Laser Barrage (5-shot spreading salvo)
+            const angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
+            for (let i = -2; i <= 2; i++) {
+                this.projectiles.push({
+                    x: this.player.x, y: this.player.y,
+                    vx: Math.cos(angle + i * 0.15) * 13,
+                    vy: Math.sin(angle + i * 0.15) * 13,
+                    damage: 55, color: '#00ffcc', radius: 6
+                });
+            }
+            this.logTerminal('[ABILITY] Quad Laser Barrage salvo launched!', 'agent');
+        } else if (this.selectedShipId === 'ship2_5') {
+            // Ion Pulse Surge (450px EMP wave)
+            const shockRadius = 450;
+            this.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - this.player.x, enemy.y - this.player.y);
+                if (dist < shockRadius) {
+                    enemy.health -= 110;
+                    enemy.vx = (enemy.x - this.player.x) * 0.12;
+                    enemy.vy = (enemy.y - this.player.y) * 0.12;
+                    this.addDamageText(enemy.x, enemy.y, 'ION PULSE -110', '#ff0055');
+                }
+            });
+            this.player.shield = Math.min(this.player.maxShield, this.player.shield + (this.player.maxShield * 0.5));
+            this.triggerScreenShake(14, 0.5);
+            this.logTerminal('[ABILITY] Ion Pulse Surge activated! Shield recharged!', 'agent');
+        } else if (this.selectedShipId === 'ship3_5') {
+            // Quantum Decoy Wingmen
+            this.enemies.slice(0, 4).forEach(e => {
+                this.projectiles.push({
+                    x: this.player.x, y: this.player.y,
+                    vx: Math.cos(Math.atan2(e.y - this.player.y, e.x - this.player.x)) * 15,
+                    vy: Math.sin(Math.atan2(e.y - this.player.y, e.x - this.player.x)) * 15,
+                    damage: 95, color: '#ff3399', radius: 7
+                });
+            });
+            this.logTerminal('[ABILITY] Quantum Decoy Wingmen engaged target fleet!', 'agent');
         } else if (this.selectedShipId === 'ship4') {
             // Devastator Beam Sweep
             this.player.beamActiveTimer = 2.5;
