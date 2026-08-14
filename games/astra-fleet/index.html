@@ -149,7 +149,10 @@
 
         <!-- START MENU OVERLAY -->
         <div id="start-overlay" class="modal-overlay active">
-            <div class="start-box glass-panel">
+            <div class="start-box glass-panel" style="position: relative;">
+                <!-- Hidden Secret Anomaly Trigger (Easter Egg Button) -->
+                <div id="btn-secret-anomaly" class="secret-trigger" title="?? CLASSIFIED SIGNAL ??" style="position: absolute; top: 18px; right: 18px; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, #ff00ff, rgba(0, 240, 255, 0.2)); opacity: 0.18; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.opacity='1.0'; this.style.boxShadow='0 0 12px #ff00ff';" onmouseout="this.style.opacity='0.18'; this.style.boxShadow='none';"></div>
+
                 <div class="hero-header">
                     <div class="cyber-badge">DEEP SPACE TACTICAL COMBAT</div>
                     <h1 class="hero-title">ASTRA SECTOR</h1>

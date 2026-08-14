@@ -184,6 +184,25 @@ class SpaceCombatEngine {
                 specialIcon: '💥',
                 specialCdMax: 10.0,
                 color: '#ffb700'
+            },
+            ship_secret: {
+                id: 'ship_secret',
+                name: 'Astra Prime Celestia',
+                class: 'CELESTIAL ANCIENT WARSHIP',
+                price: 0,
+                isSecret: true,
+                speed: 5.2,
+                hull: 420,
+                shield: 300,
+                shieldRegen: 0.25,
+                hullRegen: 0.06,
+                damage: 115,
+                fireRateDelay: 0.26,
+                specialName: 'CELESTIAL BARRAGE',
+                specialSub: '8-Way Screen Vaporizer',
+                specialIcon: '🌟',
+                specialCdMax: 8.0,
+                color: '#00ffff'
             }
         };
 
@@ -422,6 +441,16 @@ class SpaceCombatEngine {
                 e.stopPropagation();
                 this.setDifficulty('impossible');
                 this.logTerminal('[MODE] Switched to ☠️ IMPOSSIBLE MODE DIFFICULTY!', 'danger');
+            };
+        }
+
+        const btnSecret = document.getElementById('btn-secret-anomaly');
+        if (btnSecret) {
+            btnSecret.onclick = (e) => {
+                e.stopPropagation();
+                window.soundSynth.playBossWarning();
+                this.logTerminal('[CLASSIFIED] Secret Anomaly Triggered! Launching Secret Dual Boss Mission!', 'danger');
+                this.startSecretMission();
             };
         }
 
@@ -1169,6 +1198,19 @@ class SpaceCombatEngine {
                 });
             });
             this.logTerminal('[ABILITY] Quantum Decoy Wingmen engaged target fleet!', 'agent');
+        } else if (this.selectedShipId === 'ship_secret') {
+            // Celestial Nova Barrage (8-Way Screen Vaporizer)
+            const angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
+            for (let i = 0; i < 8; i++) {
+                const a = angle + (i * Math.PI / 4);
+                this.projectiles.push({
+                    x: this.player.x, y: this.player.y,
+                    vx: Math.cos(a) * 15, vy: Math.sin(a) * 15,
+                    damage: 125, color: '#00ffff', radius: 9, isTorpedo: true
+                });
+            }
+            this.triggerScreenShake(18, 0.6);
+            this.logTerminal('[ABILITY] Celestial Nova Barrage vaporized target fleet!', 'agent');
         } else if (this.selectedShipId === 'ship4') {
             // Devastator Beam Sweep
             this.player.beamActiveTimer = 2.5;
@@ -1668,7 +1710,15 @@ class SpaceCombatEngine {
             const damage = shipDef.damage + (this.upgrades.damage * 10);
             const speed = 8.5;
 
-            if (this.selectedShipId === 'ship4') {
+            if (this.selectedShipId === 'ship_secret') {
+                for (let a = -1; a <= 1; a++) {
+                    this.projectiles.push({
+                        x: this.player.x + (a * 14), y: this.player.y,
+                        vx: Math.cos(this.player.angle) * speed * 1.25, vy: Math.sin(this.player.angle) * speed * 1.25,
+                        damage: damage * 0.75, color: '#00ffff', radius: 5
+                    });
+                }
+            } else if (this.selectedShipId === 'ship4') {
                 const perpX = -Math.sin(this.player.angle) * 12;
                 const perpY = Math.cos(this.player.angle) * 12;
                 this.projectiles.push({
@@ -1691,9 +1741,133 @@ class SpaceCombatEngine {
         }
     }
 
+    startSecretMission() {
+        this.currentLevel = 99; // Secret level indicator
+        this.applyPlayerStats();
+
+        this.player.x = this.width / 2;
+        this.player.y = this.height / 2;
+        this.player.vx = 0;
+        this.player.vy = 0;
+
+        this.projectiles = [];
+        this.enemyProjectiles = [];
+        this.enemies = [];
+        this.asteroids = [];
+        this.particles = [];
+        this.pickups = [];
+        this.damageTextFx = [];
+
+        this.enemiesKilledCurrentLevel = 0;
+        this.levelOreEarned = 0;
+
+        this.hideAllModals();
+        this.bossActive = true;
+
+        const bossHud = document.getElementById('boss-hud');
+        if (bossHud) {
+            bossHud.classList.remove('hidden');
+            bossHud.classList.add('active');
+            bossHud.style.display = 'flex';
+        }
+
+        this.levelTargetKills = 2 + 4; // 2 Secret bosses + 4 escorts
+        document.getElementById('obj-text').innerText = 'TARGET: Defeat Both Secret Dual Bosses (3,000 HP Each) & Claim Celestial Warship!';
+        document.getElementById('wave-text').innerText = 'SECRET SECTOR: ANCIENT VOID NEXUS';
+
+        this.spawnSecretDualBosses();
+
+        this.isRunning = true;
+        this.isPaused = false;
+    }
+
+    spawnSecretDualBosses() {
+        window.soundSynth.playBossWarning();
+        this.triggerScreenShake(26, 1.0);
+
+        const b1 = {
+            id: 'secret_boss_1',
+            type: 'boss_dreadnought',
+            bossTier: 5,
+            x: this.width * 0.32,
+            y: -120,
+            targetY: 180,
+            vx: 0,
+            vy: 0,
+            radius: 95,
+            health: 3000,
+            maxHealth: 3000,
+            shield: 1000,
+            maxShield: 1000,
+            speed: 0.9,
+            color: '#ff00ff',
+            fireTimer: 0,
+            spawnTimer: 0,
+            attackIndex: 0,
+            phase: 1,
+            damage: 45
+        };
+
+        const b2 = {
+            id: 'secret_boss_2',
+            type: 'boss_dreadnought',
+            bossTier: 5,
+            x: this.width * 0.68,
+            y: -160,
+            targetY: 220,
+            vx: 0,
+            vy: 0,
+            radius: 95,
+            health: 3000,
+            maxHealth: 3000,
+            shield: 1000,
+            maxShield: 1000,
+            speed: 0.9,
+            color: '#00ffff',
+            fireTimer: 1.0,
+            spawnTimer: 1.0,
+            attackIndex: 0,
+            phase: 1,
+            damage: 45
+        };
+
+        this.enemies.push(b1);
+        this.enemies.push(b2);
+        this.bossEntity = b1;
+
+        // Escort Fleet
+        for (let i = 0; i < 4; i++) {
+            const offsetX = (i - 1.5) * 120;
+            this.enemies.push({
+                id: Math.random(),
+                type: 'frigate',
+                x: this.width / 2 + offsetX,
+                y: -100 - (i * 25),
+                vx: 0, vy: 0,
+                radius: 28, health: 150, maxHealth: 150,
+                shield: 80, maxShield: 80, speed: 1.2,
+                color: '#ff00ff', fireTimer: Math.random() * 2,
+                fireInterval: 3.0, damage: 25
+            });
+        }
+
+        document.getElementById('boss-name').innerText = '⚔️ SECRET DUAL BOSSES (3,000 HP EACH)';
+        this.logTerminal('[WARNING] ANCIENT VOID NEXUS DUAL BOSSES ENGAGED!', 'danger');
+    }
+
     levelVictory() {
         this.isRunning = false;
         window.soundSynth.stopSpaceMusic();
+
+        // Unlock secret ship if victorious on secret level 99
+        if (this.currentLevel === 99) {
+            if (!this.purchasedShips.includes('ship_secret')) {
+                this.purchasedShips.push('ship_secret');
+                this.selectedShipId = 'ship_secret';
+                this.saveModeData();
+                this.logTerminal('[UNLOCKED] Astra Prime Celestia Celestial Warship added to your fleet!', 'agent');
+            }
+        }
 
         if (this.currentLevel >= this.unlockedLevel) {
             this.unlockedLevel = this.currentLevel + 1;
