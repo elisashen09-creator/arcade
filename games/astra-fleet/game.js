@@ -534,7 +534,11 @@ class SpaceCombatEngine {
         document.getElementById('tab-btn-upgrades').onclick = () => this.switchHangarTab('upgrades');
 
         document.getElementById('btn-next-level').onclick = () => {
-            this.startLevel(this.unlockedLevel);
+            if (this.difficulty === 'mission' && this.currentLevel === 3) {
+                this.openStartOverlay();
+            } else {
+                this.startLevel(this.unlockedLevel);
+            }
         };
         document.getElementById('btn-victory-hangar').onclick = () => {
             this.openHangarModal();
@@ -653,6 +657,16 @@ class SpaceCombatEngine {
             bossHud.classList.add('hidden');
             bossHud.classList.remove('active');
             bossHud.style.display = 'none';
+        }
+    }
+
+    openStartOverlay() {
+        this.isRunning = false;
+        this.hideAllModals();
+        const startOverlay = document.getElementById('start-overlay');
+        if (startOverlay) {
+            startOverlay.classList.remove('hidden');
+            startOverlay.classList.add('active');
         }
     }
 
@@ -909,13 +923,13 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = 4;
+            const escortCount = 6;
             const bossCount = 1;
             this.levelTargetKills = bossCount + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat Omega Citadel War-Titan (Level 3 Final Boss) & Destroy All 4 Escorts`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat Omega Citadel War-Titan (Level 3 Final Boss) & Destroy All 6 Escorts`;
             this.spawnBoss(levelNumber);
         } else {
-            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 15 : 25) : Math.min(60, 6 + Math.floor(levelNumber * 2.2)));
+            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : 45) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
             if (this.difficulty === 'impossible') {
                 totalEnemies = Math.floor(totalEnemies * 2.5); // 150% more ships on Impossible!
             } else if (this.difficulty === 'hard') {
@@ -972,7 +986,14 @@ class SpaceCombatEngine {
             let type = 'scout';
             const r = Math.random();
 
-            if (this.difficulty === 'impossible') {
+            if (this.difficulty === 'mission') {
+                // The Mission mode: 100% high-tier lethal fleet spawns!
+                if (r > 0.60) type = 'cruiser';
+                else if (r > 0.40) type = 'frigate';
+                else if (r > 0.25) type = 'interceptor';
+                else if (r > 0.10) type = 'bomber';
+                else type = 'gunship';
+            } else if (this.difficulty === 'impossible') {
                 // Impossible mode: 90% high-tier spawns (cruiser, frigate, interceptor, bomber, gunship)!
                 if (r > 0.72) type = 'cruiser';
                 else if (r > 0.52) type = 'frigate';
@@ -996,14 +1017,17 @@ class SpaceCombatEngine {
                 if (levelNumber >= 6 && r > 0.88) type = 'cruiser';
             }
 
-            let hpMultiplier = 1 + (levelNumber * 0.35);
-            let dmgMultiplier = 1 + (levelNumber * 0.25);
-            if (this.difficulty === 'impossible') {
-                hpMultiplier *= 1.75; // 75% extra HP in Impossible mode
-                dmgMultiplier *= 1.50; // 50% extra damage in Impossible mode
+            let hpMultiplier = 1 + (levelNumber * 0.45);
+            let dmgMultiplier = 1 + (levelNumber * 0.35);
+            if (this.difficulty === 'mission') {
+                hpMultiplier *= 2.60; // 160% extra HP in The Mission mode!
+                dmgMultiplier *= 2.10; // 110% extra damage in The Mission mode!
+            } else if (this.difficulty === 'impossible') {
+                hpMultiplier *= 2.00; // 100% extra HP in Impossible mode
+                dmgMultiplier *= 1.75; // 75% extra damage in Impossible mode
             } else if (this.difficulty === 'hard') {
-                hpMultiplier *= 1.35; // 35% extra HP in Hard mode
-                dmgMultiplier *= 1.25; // 25% extra damage in Hard mode
+                hpMultiplier *= 1.50; // 50% extra HP in Hard mode
+                dmgMultiplier *= 1.35; // 35% extra damage in Hard mode
             }
 
             const hpBase = type === 'shotgun_gunship' ? 170 : (type === 'cruiser' ? 220 : (type === 'frigate' ? 160 : (type === 'bomber' ? 140 : (type === 'gunship' ? 110 : (type === 'interceptor' ? 90 : 50)))));
@@ -1046,7 +1070,14 @@ class SpaceCombatEngine {
         let radius = 70;
         let tier = 1;
 
-        if (levelNumber >= 30) {
+        if (this.difficulty === 'mission' && levelNumber === 3) {
+            bossName = "OMEGA CITADEL WAR-TITAN";
+            bossColor = "#ffb700";
+            baseHp = 22000;
+            baseShield = 6000;
+            radius = 115;
+            tier = 7;
+        } else if (levelNumber >= 30) {
             bossName = "VOID GOD APOCALYPSE PRIME";
             bossColor = "#ff0055";
             baseHp = 6500 * bossHpMult;
@@ -1849,10 +1880,16 @@ class SpaceCombatEngine {
         const currentMission = this.missionNames[this.currentLevel] || `SECTOR ${this.currentLevel}`;
         const nextMission = this.missionNames[this.unlockedLevel] || `SECTOR ${this.unlockedLevel}`;
 
-        document.getElementById('vic-kills').innerText = this.enemiesKilledCurrentLevel;
-        document.getElementById('vic-ore').innerText = `+${this.levelOreEarned + bonus} ORE`;
-        document.getElementById('vic-next-lvl').innerText = `LEVEL ${this.unlockedLevel}: ${nextMission}`;
-        document.getElementById('victory-level-name').innerText = `${currentMission} CLEARED!`;
+        const nextBtn = document.getElementById('btn-next-level');
+        if (this.difficulty === 'mission' && this.currentLevel === 3) {
+            if (nextBtn) nextBtn.innerText = '🚀 RETURN TO HOMESCREEN (MAIN MENU)';
+            document.getElementById('vic-next-lvl').innerText = '🌟 THE MISSION CAMPAIGN COMPLETE!';
+            document.getElementById('victory-level-name').innerText = '🏆 THE MISSION CLEARED!';
+        } else {
+            if (nextBtn) nextBtn.innerText = '🚀 NEXT LEVEL';
+            document.getElementById('vic-next-lvl').innerText = `LEVEL ${this.unlockedLevel}: ${nextMission}`;
+            document.getElementById('victory-level-name').innerText = `${currentMission} CLEARED!`;
+        }
 
         this.hideAllModals();
         const victoryModal = document.getElementById('victory-modal');
