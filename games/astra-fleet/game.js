@@ -328,7 +328,7 @@ class SpaceCombatEngine {
                 btnMission.style.boxShadow = '0 0 20px rgba(255, 183, 0, 0.8)';
             }
             if (hudBadge) {
-                hudBadge.innerText = '🌟 THE MISSION';
+                hudBadge.innerText = '🌟 THE FINAL MISSION';
                 hudBadge.style.color = '#ffb700';
             }
         } else if (this.difficulty === 'impossible') {
@@ -468,7 +468,7 @@ class SpaceCombatEngine {
             btnMission.onclick = (e) => {
                 e.stopPropagation();
                 this.setDifficulty('mission');
-                this.logTerminal('[MODE] Switched to 🌟 THE MISSION CAMPAIGN!', 'sys');
+                this.logTerminal('[MODE] Switched to 🌟 THE FINAL MISSION CAMPAIGN!', 'sys');
             };
         }
 
@@ -749,7 +749,7 @@ class SpaceCombatEngine {
                 
                 let btnText = isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`);
                 if (def.isMissionReward && !isPurchased) {
-                    btnText = '🔒 MISSION REWARD (Clear all 5 levels of The Mission mode to Unlock)';
+                    btnText = '🔒 FINAL MISSION REWARD (Clear all 5 levels of The Final Mission mode to Unlock)';
                 }
 
                 card.innerHTML = `
@@ -945,7 +945,7 @@ class SpaceCombatEngine {
                 totalEnemies = Math.floor(totalEnemies * 1.8);
             }
             this.levelTargetKills = totalEnemies;
-            const diffTag = this.difficulty === 'mission' ? '(🌟 THE MISSION)' : (this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''));
+            const diffTag = this.difficulty === 'mission' ? '(🌟 THE FINAL MISSION)' : (this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''));
             document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${diffTag}`;
             this.spawnLevelEnemies(levelNumber, totalEnemies);
         }
@@ -1946,8 +1946,8 @@ class SpaceCombatEngine {
         const nextBtn = document.getElementById('btn-next-level');
         if (this.difficulty === 'mission' && this.currentLevel === 5) {
             if (nextBtn) nextBtn.innerText = '🚀 RETURN TO HOMESCREEN (MAIN MENU)';
-            document.getElementById('vic-next-lvl').innerText = '🌟 THE MISSION CAMPAIGN COMPLETE!';
-            document.getElementById('victory-level-name').innerText = '🏆 ALL 5 MISSIONS CLEARED!';
+            document.getElementById('vic-next-lvl').innerText = '🌟 THE FINAL MISSION CAMPAIGN COMPLETE!';
+            document.getElementById('victory-level-name').innerText = '🏆 ALL 5 FINAL MISSIONS CLEARED!';
         } else {
             if (nextBtn) nextBtn.innerText = '🚀 NEXT LEVEL';
             document.getElementById('vic-next-lvl').innerText = `LEVEL ${this.unlockedLevel}: ${nextMission}`;
