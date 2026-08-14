@@ -1164,22 +1164,49 @@ class SpaceCombatEngine {
             if (b === 0) this.bossEntity = bEntity;
         }
 
-        // Spawn Escort Fleet alongside boss (30 Escort Ships for The Final Mission!)
+        // Spawn Escort Fleet alongside boss (30 Escort Ships distributed Top, Left, and Right for The Final Mission!)
         const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
-        const cols = 10;
         for (let i = 0; i < escortCount; i++) {
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            const offsetX = (col - (cols - 1) / 2) * 65;
-            const offsetY = -40 - (row * 40);
+            let spawnX, spawnY, initialVx, initialVy;
+
+            if (this.difficulty === 'mission') {
+                if (i < 10) {
+                    // Top Command Vanguard (10 ships across upper edge)
+                    spawnX = (this.width / 2) + ((i - 4.5) * 70);
+                    spawnY = -40 - ((i % 2) * 35);
+                    initialVx = 0;
+                    initialVy = 1.2;
+                } else if (i < 20) {
+                    // Left Flank Fleet (10 ships along left side edge)
+                    const leftIdx = i - 10;
+                    spawnX = -40 - ((leftIdx % 2) * 35);
+                    spawnY = 70 + (leftIdx * 38);
+                    initialVx = 1.4;
+                    initialVy = 0.2;
+                } else {
+                    // Right Flank Fleet (10 ships along right side edge)
+                    const rightIdx = i - 20;
+                    spawnX = this.width + 40 + ((rightIdx % 2) * 35);
+                    spawnY = 70 + (rightIdx * 38);
+                    initialVx = -1.4;
+                    initialVy = 0.2;
+                }
+            } else {
+                const offsetX = (i - (escortCount - 1) / 2) * 85;
+                spawnX = this.width / 2 + offsetX;
+                spawnY = -60 - ((i % 2) * 35);
+                initialVx = 0;
+                initialVy = 1.2;
+            }
 
             const eType = i % 4 === 0 ? 'cruiser' : (i % 3 === 0 ? 'frigate' : (i % 2 === 0 ? 'bomber' : 'interceptor'));
             this.enemies.push({
                 id: Math.random(),
                 type: eType,
-                x: this.width / 2 + offsetX,
-                y: offsetY,
-                vx: 0, vy: 1.2,
+                x: spawnX,
+                y: spawnY,
+                vx: initialVx,
+                vy: initialVy,
                 radius: eType === 'cruiser' ? 34 : (eType === 'frigate' ? 28 : (eType === 'bomber' ? 22 : 20)),
                 health: 250, maxHealth: 250,
                 shield: 120, maxShield: 120, speed: 1.4,
