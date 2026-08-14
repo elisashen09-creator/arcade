@@ -205,10 +205,10 @@ class SpaceCombatEngine {
                 hullRegen: 0.08,
                 damage: 120,
                 fireRateDelay: 0.24,
-                specialName: 'STARSTRIKE SALVO',
-                specialSub: '8-Way Homing Starburst',
-                specialIcon: '🌟',
-                specialCdMax: 7.5,
+                specialName: 'TRIPLE BEAM SWEEP',
+                specialSub: 'Continuous Triple Laser',
+                specialIcon: '⚡',
+                specialCdMax: 8.0,
                 color: '#ffb700'
             }
         };
@@ -1311,18 +1311,10 @@ class SpaceCombatEngine {
             });
             this.logTerminal('[ABILITY] Quantum Decoy Wingmen engaged target fleet!', 'agent');
         } else if (this.selectedShipId === 'ship_mission_reward') {
-            // Starstrike Salvo (8-Way Homing Starburst)
-            const angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
-            for (let i = 0; i < 8; i++) {
-                const a = angle + (i * Math.PI / 4);
-                this.projectiles.push({
-                    x: this.player.x, y: this.player.y,
-                    vx: Math.cos(a) * 15, vy: Math.sin(a) * 15,
-                    damage: 130, color: '#ffb700', radius: 9, isTorpedo: true
-                });
-            }
-            this.triggerScreenShake(18, 0.6);
-            this.logTerminal('[ABILITY] Starstrike Salvo unleashed!', 'agent');
+            // Triple Laser Devastator Beam Sweep
+            this.player.beamActiveTimer = 2.5;
+            this.triggerScreenShake(12, 0.4);
+            this.logTerminal('[ABILITY] Triple Devastator Beam Sweep initiated!', 'agent');
         } else if (this.selectedShipId === 'ship4') {
             // Devastator Beam Sweep
             this.player.beamActiveTimer = 2.5;
@@ -1475,21 +1467,26 @@ class SpaceCombatEngine {
         // Auto Firing Primary Cannon (Continuous Autofire)
         this.firePlayerCannon();
 
-        // Devastator Beam Damage
+        // Devastator Beam & Triple Laser Beam Damage
         if (this.player.beamActiveTimer > 0) {
             const angle = this.player.angle;
+            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? [angle - 0.16, angle, angle + 0.16] : [angle];
+            const tickDmg = (this.selectedShipId === 'ship_mission_reward') ? 9 : 12;
+
             this.enemies.forEach(enemy => {
                 const enemyAngle = Math.atan2(enemy.y - this.player.y, enemy.x - this.player.x);
-                let diff = Math.abs(angle - enemyAngle);
-                if (diff > Math.PI) diff = Math.PI * 2 - diff;
-                if (diff < 0.25) {
-                    if (enemy.shield && enemy.shield > 0) {
-                        enemy.shield -= 12;
-                    } else {
-                        enemy.health -= 12;
+                beamAngles.forEach(bAngle => {
+                    let diff = Math.abs(bAngle - enemyAngle);
+                    if (diff > Math.PI) diff = Math.PI * 2 - diff;
+                    if (diff < 0.18) {
+                        if (enemy.shield && enemy.shield > 0) {
+                            enemy.shield -= tickDmg;
+                        } else {
+                            enemy.health -= tickDmg;
+                        }
+                        this.addDamageText(enemy.x, enemy.y, `-${tickDmg}`, '#00ffff');
                     }
-                    this.addDamageText(enemy.x, enemy.y, '-12', '#ffb700');
-                }
+                });
             });
         }
 
@@ -2139,14 +2136,19 @@ class SpaceCombatEngine {
 
         if (this.player.beamActiveTimer > 0) {
             this.ctx.save();
-            this.ctx.strokeStyle = '#ffb700';
-            this.ctx.lineWidth = 14;
-            this.ctx.shadowColor = '#ff0055';
-            this.ctx.shadowBlur = 25;
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.player.x, this.player.y);
-            this.ctx.lineTo(this.player.x + Math.cos(this.player.angle) * 1200, this.player.y + Math.sin(this.player.angle) * 1200);
-            this.ctx.stroke();
+            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? [this.player.angle - 0.16, this.player.angle, this.player.angle + 0.16] : [this.player.angle];
+            const colors = (this.selectedShipId === 'ship_mission_reward') ? ['#00ffff', '#ffb700', '#00ffff'] : ['#ffb700'];
+
+            beamAngles.forEach((bAngle, idx) => {
+                this.ctx.strokeStyle = colors[idx] || '#00ffff';
+                this.ctx.lineWidth = (this.selectedShipId === 'ship_mission_reward') ? 8 : 14;
+                this.ctx.shadowColor = colors[idx] || '#ff0055';
+                this.ctx.shadowBlur = 20;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.player.x, this.player.y);
+                this.ctx.lineTo(this.player.x + Math.cos(bAngle) * 1200, this.player.y + Math.sin(bAngle) * 1200);
+                this.ctx.stroke();
+            });
             this.ctx.restore();
         }
 
