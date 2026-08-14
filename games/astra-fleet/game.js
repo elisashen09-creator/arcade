@@ -923,10 +923,10 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = 6;
+            const escortCount = (this.difficulty === 'mission' ? 10 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
             const bossCount = 1;
             this.levelTargetKills = bossCount + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat Omega Citadel War-Titan (Level 3 Final Boss) & Destroy All 6 Escorts`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan' : 'Boss'} & Destroy All ${escortCount} Escorts`;
             this.spawnBoss(levelNumber);
         } else {
             let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : 45) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
@@ -1155,8 +1155,28 @@ class SpaceCombatEngine {
             if (b === 0) this.bossEntity = bEntity;
         }
 
+        // Spawn Escort Fleet alongside boss
+        const escortCount = (this.difficulty === 'mission' ? 10 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
+        for (let i = 0; i < escortCount; i++) {
+            const offsetX = (i - (escortCount - 1) / 2) * 85;
+            const eType = i % 3 === 0 ? 'cruiser' : (i % 2 === 0 ? 'frigate' : 'interceptor');
+            this.enemies.push({
+                id: Math.random(),
+                type: eType,
+                x: this.width / 2 + offsetX,
+                y: -60 - (i % 2 === 0 ? 0 : 35),
+                vx: 0, vy: 1.2,
+                radius: eType === 'cruiser' ? 34 : (eType === 'frigate' ? 28 : 20),
+                health: 250, maxHealth: 250,
+                shield: 120, maxShield: 120, speed: 1.4,
+                color: eType === 'cruiser' ? '#ff0055' : (eType === 'frigate' ? '#00f0ff' : '#9d00ff'),
+                fireTimer: Math.random() * 2,
+                fireInterval: 2.8, damage: 32
+            });
+        }
+
         document.getElementById('boss-name').innerText = `${isDualBoss ? '⚔️ DUAL BOSS: ' : ''}${bossName} (LEVEL ${levelNumber})`;
-        this.logTerminal(`[WARNING] ${isDualBoss ? 'DUAL DREADNOUGHT BOSSES DETECTED!' : 'BOSS DETECTED!'} ${bossName} INCOMING WITH ESCORT FLEET!`, 'danger');
+        this.logTerminal(`[WARNING] ${isDualBoss ? 'DUAL DREADNOUGHT BOSSES DETECTED!' : 'BOSS DETECTED!'} ${bossName} INCOMING WITH ${escortCount} ESCORT SHIPS!`, 'danger');
     }
 
     // --- CONTROLS & SPECIAL ABILITIES ---
