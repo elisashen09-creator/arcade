@@ -954,13 +954,18 @@ class SpaceCombatEngine {
             const r = Math.random();
 
             if (this.difficulty === 'impossible') {
-                // Impossible mode: 90% high-tier spawns (cruiser, frigate, interceptor, bomber, gunship)!
-                if (r > 0.72) type = 'cruiser';
-                else if (r > 0.52) type = 'frigate';
-                else if (r > 0.35) type = 'interceptor';
-                else if (r > 0.20) type = 'bomber';
-                else if (r > 0.08) type = 'gunship';
-                else type = 'scout';
+                // Impossible mode: Shotgun ships spawn in from the left/right sides!
+                if (r > 0.65) type = 'shotgun_gunship';
+                else if (r > 0.45) type = 'cruiser';
+                else if (r > 0.30) type = 'frigate';
+                else if (r > 0.15) type = 'interceptor';
+                else type = 'gunship';
+
+                if (type === 'shotgun_gunship') {
+                    // Always spawn shotgun ships from left or right sides!
+                    x = Math.random() < 0.5 ? -40 : this.width + 40;
+                    y = Math.random() * (this.height * 0.5) + 60;
+                }
             } else if (this.difficulty === 'hard') {
                 // Hard mode: Stronger ships spawn much more frequently across ALL levels!
                 if (r > 0.80) type = 'cruiser';
@@ -987,9 +992,9 @@ class SpaceCombatEngine {
                 dmgMultiplier *= 1.25; // 25% extra damage in Hard mode
             }
 
-            const hpBase = type === 'cruiser' ? 220 : (type === 'frigate' ? 160 : (type === 'bomber' ? 140 : (type === 'gunship' ? 110 : (type === 'interceptor' ? 90 : 50))));
-            const radius = type === 'cruiser' ? 34 : (type === 'frigate' ? 28 : (type === 'gunship' ? 24 : (type === 'bomber' ? 22 : 18)));
-            const speed = type === 'scout' ? 1.6 : (type === 'interceptor' ? 2.4 : (type === 'bomber' ? 2.0 : (type === 'gunship' ? 1.2 : 0.8)));
+            const hpBase = type === 'shotgun_gunship' ? 170 : (type === 'cruiser' ? 220 : (type === 'frigate' ? 160 : (type === 'bomber' ? 140 : (type === 'gunship' ? 110 : (type === 'interceptor' ? 90 : 50)))));
+            const radius = type === 'shotgun_gunship' ? 26 : (type === 'cruiser' ? 34 : (type === 'frigate' ? 28 : (type === 'gunship' ? 24 : (type === 'bomber' ? 22 : 18))));
+            const speed = type === 'shotgun_gunship' ? 2.0 : (type === 'scout' ? 1.6 : (type === 'interceptor' ? 2.4 : (type === 'bomber' ? 2.0 : (type === 'gunship' ? 1.2 : 0.8))));
 
             this.enemies.push({
                 id: Math.random(),
@@ -1001,15 +1006,15 @@ class SpaceCombatEngine {
                 radius: radius,
                 health: hpBase * hpMultiplier,
                 maxHealth: hpBase * hpMultiplier,
-                shield: type === 'cruiser' || type === 'frigate' ? 80 * hpMultiplier : 0,
-                maxShield: type === 'cruiser' || type === 'frigate' ? 80 * hpMultiplier : 0,
+                shield: type === 'cruiser' || type === 'frigate' || type === 'shotgun_gunship' ? 70 * hpMultiplier : 0,
+                maxShield: type === 'cruiser' || type === 'frigate' || type === 'shotgun_gunship' ? 70 * hpMultiplier : 0,
                 speed: speed,
-                color: type === 'cruiser' ? '#ff0055' : (type === 'frigate' ? '#00f0ff' : (type === 'gunship' ? '#ffb700' : (type === 'interceptor' ? '#9d00ff' : (type === 'bomber' ? '#ff3300' : '#00ff66')))),
+                color: type === 'shotgun_gunship' ? '#ff9900' : (type === 'cruiser' ? '#ff0055' : (type === 'frigate' ? '#00f0ff' : (type === 'gunship' ? '#ffb700' : (type === 'interceptor' ? '#9d00ff' : (type === 'bomber' ? '#ff3300' : '#00ff66'))))),
                 fireTimer: Math.random() * 2,
+                fireInterval: type === 'shotgun_gunship' ? 2.5 : (type === 'interceptor' ? 2.8 : 3.8),
                 cloakTimer: 0,
                 isCloaked: false,
-                fireInterval: type === 'interceptor' ? 2.8 : (type === 'gunship' ? 3.8 : (type === 'cruiser' ? 4.8 : 4.2)),
-                damage: 25 * dmgMultiplier
+                damage: 28 * dmgMultiplier
             });
         }
     }
@@ -1463,11 +1468,12 @@ class SpaceCombatEngine {
                     this.addDamageText(enemy.x, enemy.y, 'WARP DROPSHIP INBOUND! 🛸', '#ffb700');
                     this.logTerminal(`[WARNING] BOSS SUMMONED REINFORCEMENT FLEET!`, 'danger');
 
-                    const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'hard' ? 2 : 1);
+                    const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
                     for (let c = 0; c < spawnCount; c++) {
-                        const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
+                        const rType = (this.difficulty === 'impossible' && c % 2 === 0) ? 'shotgun_gunship' : (c % 2 === 0 ? 'gunship' : 'interceptor');
+                        // Spawn reinforcements strictly from left or right sides!
                         const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
-                        const spawnY = Math.random() * (this.height * 0.6);
+                        const spawnY = Math.random() * (this.height * 0.5) + 60;
 
                         this.enemies.push({
                             id: Math.random(),
@@ -1475,11 +1481,11 @@ class SpaceCombatEngine {
                             x: spawnX,
                             y: spawnY,
                             vx: 0, vy: 0,
-                            radius: rType === 'gunship' ? 24 : 20,
-                            health: 140, maxHealth: 140,
-                            speed: 1.5,
-                            color: rType === 'gunship' ? '#ffb700' : '#9d00ff',
-                            fireTimer: 0, fireInterval: 2.8, damage: 25
+                            radius: rType === 'shotgun_gunship' ? 26 : (rType === 'gunship' ? 24 : 20),
+                            health: 150, maxHealth: 150,
+                            speed: 1.8,
+                            color: rType === 'shotgun_gunship' ? '#ff9900' : (rType === 'gunship' ? '#ffb700' : '#9d00ff'),
+                            fireTimer: 0, fireInterval: rType === 'shotgun_gunship' ? 2.4 : 2.8, damage: 28
                         });
                         this.levelTargetKills++;
                     }
@@ -1528,7 +1534,16 @@ class SpaceCombatEngine {
                     enemy.fireTimer = 0;
                     window.soundSynth.playEnemyLaser();
 
-                    if (enemy.type === 'gunship') {
+                    if (enemy.type === 'shotgun_gunship') {
+                        // 5-Way Shotgun Plasma Burst Salvo (Heavy Spreading Salvo!)
+                        for (let spread = -0.4; spread <= 0.4; spread += 0.2) {
+                            this.enemyProjectiles.push({
+                                x: enemy.x, y: enemy.y,
+                                vx: Math.cos(angle + spread) * 3.4, vy: Math.sin(angle + spread) * 3.4,
+                                damage: enemy.damage * 0.85, color: '#ff9900', radius: 6
+                            });
+                        }
+                    } else if (enemy.type === 'gunship') {
                         // 3-way spread amber plasma
                         for (let spread = -0.25; spread <= 0.25; spread += 0.25) {
                             this.enemyProjectiles.push({
