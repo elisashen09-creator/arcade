@@ -1943,13 +1943,20 @@ class SpaceCombatEngine {
             cdText.innerText = 'READY';
         }
 
-        const bossEntities = this.enemies.filter(e => e.type === 'boss_dreadnought');
+        const bossEntities = this.enemies.filter(e => e.type === 'boss_dreadnought' && e.health > 0);
         if (bossEntities.length > 0) {
             const totalHp = bossEntities.reduce((sum, b) => sum + Math.max(0, b.health), 0);
             const totalMaxHp = bossEntities.reduce((sum, b) => sum + b.maxHealth, 0);
             const pct = Math.max(0, (totalHp / totalMaxHp)) * 100;
             document.getElementById('boss-health-fill').style.width = `${pct}%`;
             document.getElementById('boss-health-text').innerText = `${bossEntities.length > 1 ? '⚔️ DUAL BOSSES: ' : ''}${Math.ceil(totalHp)} / ${totalMaxHp} HP`;
+        } else if (this.bossActive) {
+            const bossHud = document.getElementById('boss-hud');
+            if (bossHud) {
+                bossHud.classList.add('hidden');
+                bossHud.style.display = 'none';
+            }
+            this.bossActive = false;
         }
 
         this.renderRadar();
