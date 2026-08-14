@@ -500,7 +500,7 @@ body, html {
     transition: opacity 0.3s ease;
 }
 
-.modal-overlay.hidden {
+.hidden, .boss-hud.hidden, .modal-overlay.hidden {
     display: none !important;
 }
 

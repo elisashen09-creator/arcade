@@ -504,6 +504,19 @@ class SpaceCombatEngine {
         btn.disabled = (lvl > this.unlockedLevel);
     }
 
+    hideAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.classList.add('hidden');
+            el.classList.remove('active');
+        });
+        const bossHud = document.getElementById('boss-hud');
+        if (bossHud) {
+            bossHud.classList.add('hidden');
+            bossHud.classList.remove('active');
+            bossHud.style.display = 'none';
+        }
+    }
+
     openMapModal() {
         this.hideAllModals();
         this.initSectorMap();
@@ -740,9 +753,11 @@ class SpaceCombatEngine {
             if (isBossLevel) {
                 bossHud.classList.remove('hidden');
                 bossHud.classList.add('active');
+                bossHud.style.display = 'flex';
             } else {
                 bossHud.classList.add('hidden');
                 bossHud.classList.remove('active');
+                bossHud.style.display = 'none';
             }
         }
 
@@ -1073,8 +1088,12 @@ class SpaceCombatEngine {
         this.player.x += this.player.vx;
         this.player.y += this.player.vy;
 
+        const topBoundary = 70 + this.player.radius + 6; // 70px top functions header bar + ship radius + margin offset
         this.player.x = Math.max(this.player.radius, Math.min(this.width - this.player.radius, this.player.x));
-        this.player.y = Math.max(this.player.radius, Math.min(this.height - this.player.radius, this.player.y));
+        this.player.y = Math.max(topBoundary, Math.min(this.height - this.player.radius, this.player.y));
+        if (this.player.y <= topBoundary && this.player.vy < 0) {
+            this.player.vy = 0;
+        }
 
         this.player.angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
 
