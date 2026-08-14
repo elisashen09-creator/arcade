@@ -954,18 +954,13 @@ class SpaceCombatEngine {
             const r = Math.random();
 
             if (this.difficulty === 'impossible') {
-                // Impossible mode: Shotgun ships spawn in from the left/right sides!
-                if (r > 0.65) type = 'shotgun_gunship';
-                else if (r > 0.45) type = 'cruiser';
-                else if (r > 0.30) type = 'frigate';
-                else if (r > 0.15) type = 'interceptor';
-                else type = 'gunship';
-
-                if (type === 'shotgun_gunship') {
-                    // Always spawn shotgun ships from left or right sides!
-                    x = Math.random() < 0.5 ? -40 : this.width + 40;
-                    y = Math.random() * (this.height * 0.5) + 60;
-                }
+                // Impossible mode: 90% high-tier spawns (cruiser, frigate, interceptor, bomber, gunship)!
+                if (r > 0.72) type = 'cruiser';
+                else if (r > 0.52) type = 'frigate';
+                else if (r > 0.35) type = 'interceptor';
+                else if (r > 0.20) type = 'bomber';
+                else if (r > 0.08) type = 'gunship';
+                else type = 'scout';
             } else if (this.difficulty === 'hard') {
                 // Hard mode: Stronger ships spawn much more frequently across ALL levels!
                 if (r > 0.80) type = 'cruiser';
@@ -1509,8 +1504,7 @@ class SpaceCombatEngine {
 
                     const spawnCount = (enemy.bossTier === 3 ? 3 : (enemy.bossTier === 2 ? 2 : 1)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
                     for (let c = 0; c < spawnCount; c++) {
-                        const rType = (this.difficulty === 'impossible' && c % 2 === 0) ? 'shotgun_gunship' : (c % 2 === 0 ? 'gunship' : 'interceptor');
-                        // Spawn reinforcements strictly from left or right sides!
+                        const rType = c % 2 === 0 ? 'gunship' : 'interceptor';
                         const spawnX = Math.random() < 0.5 ? -40 : this.width + 40;
                         const spawnY = Math.random() * (this.height * 0.5) + 60;
 
