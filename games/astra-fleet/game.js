@@ -184,6 +184,25 @@ class SpaceCombatEngine {
                 specialIcon: '💥',
                 specialCdMax: 10.0,
                 color: '#ffb700'
+            },
+            ship_mission_reward: {
+                id: 'ship_mission_reward',
+                name: 'Astra Sovereign Vanguard',
+                class: 'GOLDEN OMEGA WARSHIP',
+                price: 0,
+                isMissionReward: true,
+                speed: 5.5,
+                hull: 450,
+                shield: 350,
+                shieldRegen: 0.28,
+                hullRegen: 0.08,
+                damage: 120,
+                fireRateDelay: 0.24,
+                specialName: 'STARSTRIKE SALVO',
+                specialSub: '8-Way Homing Starburst',
+                specialIcon: '🌟',
+                specialCdMax: 7.5,
+                color: '#ffb700'
             }
         };
 
@@ -278,6 +297,7 @@ class SpaceCombatEngine {
         const btnNormal = document.getElementById('diff-btn-normal');
         const btnHard = document.getElementById('diff-btn-hard');
         const btnImpossible = document.getElementById('diff-btn-impossible');
+        const btnMission = document.getElementById('diff-btn-mission');
         const hudBadge = document.getElementById('hud-diff-badge');
 
         const resetBtn = (btn) => {
@@ -291,8 +311,20 @@ class SpaceCombatEngine {
         resetBtn(btnNormal);
         resetBtn(btnHard);
         resetBtn(btnImpossible);
+        resetBtn(btnMission);
 
-        if (this.difficulty === 'impossible') {
+        if (this.difficulty === 'mission') {
+            if (btnMission) {
+                btnMission.style.border = '2px solid #ffb700';
+                btnMission.style.background = 'rgba(255, 183, 0, 0.35)';
+                btnMission.style.color = '#ffb700';
+                btnMission.style.boxShadow = '0 0 20px rgba(255, 183, 0, 0.8)';
+            }
+            if (hudBadge) {
+                hudBadge.innerText = '🌟 THE MISSION';
+                hudBadge.style.color = '#ffb700';
+            }
+        } else if (this.difficulty === 'impossible') {
             if (btnImpossible) {
                 btnImpossible.style.border = '2px solid #9d00ff';
                 btnImpossible.style.background = 'rgba(157, 0, 255, 0.35)';
@@ -403,6 +435,7 @@ class SpaceCombatEngine {
         const btnNormal = document.getElementById('diff-btn-normal');
         const btnHard = document.getElementById('diff-btn-hard');
         const btnImpossible = document.getElementById('diff-btn-impossible');
+        const btnMission = document.getElementById('diff-btn-mission');
         if (btnNormal) {
             btnNormal.onclick = (e) => {
                 e.stopPropagation();
@@ -422,6 +455,13 @@ class SpaceCombatEngine {
                 e.stopPropagation();
                 this.setDifficulty('impossible');
                 this.logTerminal('[MODE] Switched to ☠️ IMPOSSIBLE MODE DIFFICULTY!', 'danger');
+            };
+        }
+        if (btnMission) {
+            btnMission.onclick = (e) => {
+                e.stopPropagation();
+                this.setDifficulty('mission');
+                this.logTerminal('[MODE] Switched to 🌟 THE MISSION CAMPAIGN!', 'sys');
             };
         }
 
@@ -533,12 +573,19 @@ class SpaceCombatEngine {
         if (!container) return;
         container.innerHTML = '';
 
-        for (let i = 1; i <= 30; i++) {
-            const isBoss = (this.difficulty === 'impossible' ? (i % 3 === 0) : (i % 5 === 0));
-            const isDualBoss = (i === 15 || i === 30);
+        const maxLevel = (this.difficulty === 'mission' ? 3 : 30);
+        const missionModeNames = {
+            1: 'MISSION ALPHA: NEBULA INFILTRATION',
+            2: 'MISSION BETA: CORRIDOR OF FIRE',
+            3: 'MISSION OMEGA: CITADEL WAR-TITAN 👑'
+        };
+
+        for (let i = 1; i <= maxLevel; i++) {
+            const isBoss = (this.difficulty === 'mission' ? (i === 3) : (this.difficulty === 'impossible' ? (i % 3 === 0) : (i % 5 === 0)));
+            const isDualBoss = (this.difficulty !== 'mission' && (i === 15 || i === 30));
             const isUnlocked = (i <= this.unlockedLevel);
             const isCompleted = this.completedLevels.includes(i);
-            const missionName = this.missionNames[i] || `SECTOR ${i}`;
+            const missionName = this.difficulty === 'mission' ? (missionModeNames[i] || `MISSION ${i}`) : (this.missionNames[i] || `SECTOR ${i}`);
 
             const node = document.createElement('div');
             let nodeClass = `sector-node-card ${isBoss ? 'boss-node' : ''} ${isCompleted ? 'completed' : ''} ${isUnlocked ? '' : 'locked'}`;
@@ -675,27 +722,30 @@ class SpaceCombatEngine {
                 const isEquipped = (this.selectedShipId === id);
 
                 const card = document.createElement('div');
-                card.className = `ship-card ${isEquipped ? 'equipped' : ''}`;
+                card.className = `ship-card ${isEquipped ? 'equipped' : ''} ${def.isMissionReward && !isPurchased ? 'secret-locked' : ''}`;
                 
                 let btnText = isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`);
+                if (def.isMissionReward && !isPurchased) {
+                    btnText = '🔒 MISSION REWARD (Clear all 3 levels of The Mission mode to Unlock)';
+                }
 
                 card.innerHTML = `
                     <div class="ship-header">
                         <div>
-                            <div class="ship-name" style="color: ${def.color};">${def.name}</div>
+                            <div class="ship-name" style="color: ${def.color};">${def.isMissionReward && !isPurchased ? '🔒 Mission Reward Warship' : def.name}</div>
                             <div class="ship-class">${def.class}</div>
                         </div>
-                        <div style="font-size: 28px;">${def.specialIcon}</div>
+                        <div style="font-size: 28px;">${def.isMissionReward && !isPurchased ? '🔒' : def.specialIcon}</div>
                     </div>
                     <div class="ship-stats-list">
                         <div class="ship-stat-row">
                             <span class="stat-label">Hull Strength:</span>
-                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.hull / 420) * 100)}%;"></div></div>
+                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.hull / 450) * 100)}%;"></div></div>
                             <strong>${def.hull} HP</strong>
                         </div>
                         <div class="ship-stat-row">
                             <span class="stat-label">Force Shield:</span>
-                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.shield / 320) * 100)}%; background: var(--neon-cyan);"></div></div>
+                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.shield / 350) * 100)}%; background: var(--neon-cyan);"></div></div>
                             <strong>${def.shield} Shield</strong>
                         </div>
                         <div class="ship-stat-row">
@@ -714,7 +764,7 @@ class SpaceCombatEngine {
                 `;
 
                 const actionBtn = card.querySelector('.btn-ship-action');
-                actionBtn.disabled = isEquipped || (!isPurchased && this.credits < def.price);
+                actionBtn.disabled = isEquipped || (def.isMissionReward && !isPurchased) || (!isPurchased && this.credits < def.price);
 
                 actionBtn.onclick = () => {
                     if (isEquipped) return;
@@ -841,8 +891,8 @@ class SpaceCombatEngine {
         // HIDE ALL SCREENS & OVERLAYS COMPLETELY
         this.hideAllModals();
 
-        const isBossLevel = (this.difficulty === 'impossible' ? (levelNumber % 3 === 0) : (levelNumber % 5 === 0));
-        const isDualBoss = (levelNumber === 15 || levelNumber === 30);
+        const isBossLevel = (this.difficulty === 'mission' ? (levelNumber === 3) : (this.difficulty === 'impossible' ? (levelNumber % 3 === 0) : (levelNumber % 5 === 0)));
+        const isDualBoss = (this.difficulty !== 'mission' && (levelNumber === 15 || levelNumber === 30));
         this.bossActive = isBossLevel;
 
         const bossHud = document.getElementById('boss-hud');
@@ -859,21 +909,20 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)) * (this.difficulty === 'impossible' ? 3 : (this.difficulty === 'hard' ? 2 : 1));
-            const bossCount = isDualBoss ? 2 : 1;
+            const escortCount = 4;
+            const bossCount = 1;
             this.levelTargetKills = bossCount + escortCount;
-            const diffTag = this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE)' : (this.difficulty === 'hard' ? '(🔥 HARD)' : '');
-            document.getElementById('obj-text').innerText = `TARGET: Defeat ${isDualBoss ? '2 DUAL BOSSES' : 'Boss'} & Destroy All ${escortCount} Escorts ${diffTag}`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat Omega Citadel War-Titan (Level 3 Final Boss) & Destroy All 4 Escorts`;
             this.spawnBoss(levelNumber);
         } else {
-            let totalEnemies = Math.min(60, 6 + Math.floor(levelNumber * 2.2));
+            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 15 : 25) : Math.min(60, 6 + Math.floor(levelNumber * 2.2)));
             if (this.difficulty === 'impossible') {
                 totalEnemies = Math.floor(totalEnemies * 2.5); // 150% more ships on Impossible!
             } else if (this.difficulty === 'hard') {
                 totalEnemies = Math.floor(totalEnemies * 1.8);
             }
             this.levelTargetKills = totalEnemies;
-            const diffTag = this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : '');
+            const diffTag = this.difficulty === 'mission' ? '(🌟 THE MISSION)' : (this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''));
             document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${diffTag}`;
             this.spawnLevelEnemies(levelNumber, totalEnemies);
         }
@@ -1174,6 +1223,19 @@ class SpaceCombatEngine {
                 });
             });
             this.logTerminal('[ABILITY] Quantum Decoy Wingmen engaged target fleet!', 'agent');
+        } else if (this.selectedShipId === 'ship_mission_reward') {
+            // Starstrike Salvo (8-Way Homing Starburst)
+            const angle = Math.atan2(this.mouse.y - this.player.y, this.mouse.x - this.player.x);
+            for (let i = 0; i < 8; i++) {
+                const a = angle + (i * Math.PI / 4);
+                this.projectiles.push({
+                    x: this.player.x, y: this.player.y,
+                    vx: Math.cos(a) * 15, vy: Math.sin(a) * 15,
+                    damage: 130, color: '#ffb700', radius: 9, isTorpedo: true
+                });
+            }
+            this.triggerScreenShake(18, 0.6);
+            this.logTerminal('[ABILITY] Starstrike Salvo unleashed!', 'agent');
         } else if (this.selectedShipId === 'ship4') {
             // Devastator Beam Sweep
             this.player.beamActiveTimer = 2.5;
@@ -1721,7 +1783,15 @@ class SpaceCombatEngine {
             const damage = shipDef.damage + (this.upgrades.damage * 10);
             const speed = 8.5;
 
-            if (this.selectedShipId === 'ship4') {
+            if (this.selectedShipId === 'ship_mission_reward') {
+                for (let a = -1; a <= 1; a++) {
+                    this.projectiles.push({
+                        x: this.player.x + (a * 14), y: this.player.y,
+                        vx: Math.cos(this.player.angle) * speed * 1.25, vy: Math.sin(this.player.angle) * speed * 1.25,
+                        damage: damage * 0.8, color: '#ffb700', radius: 5
+                    });
+                }
+            } else if (this.selectedShipId === 'ship4') {
                 const perpX = -Math.sin(this.player.angle) * 12;
                 const perpY = Math.cos(this.player.angle) * 12;
                 this.projectiles.push({
@@ -1747,6 +1817,16 @@ class SpaceCombatEngine {
     levelVictory() {
         this.isRunning = false;
         window.soundSynth.stopSpaceMusic();
+
+        // Unlock Astra Sovereign Vanguard if all 3 levels of The Mission mode are completed!
+        if (this.difficulty === 'mission' && this.currentLevel === 3) {
+            if (!this.purchasedShips.includes('ship_mission_reward')) {
+                this.purchasedShips.push('ship_mission_reward');
+                this.selectedShipId = 'ship_mission_reward';
+                this.saveModeData();
+                this.logTerminal('[UNLOCKED] 🌟 Astra Sovereign Vanguard Capital Warship unlocked and added to your fleet!', 'agent');
+            }
+        }
 
         if (this.currentLevel >= this.unlockedLevel) {
             this.unlockedLevel = this.currentLevel + 1;
@@ -2030,7 +2110,26 @@ class SpaceCombatEngine {
         this.ctx.shadowColor = shipDef.color;
         this.ctx.shadowBlur = 12;
 
-        if (this.selectedShipId === 'ship4') {
+        if (this.selectedShipId === 'ship_mission_reward') {
+            // Astra Sovereign Vanguard (Golden Omega Warship Geometry)
+            this.ctx.beginPath();
+            this.ctx.moveTo(28, 0);
+            this.ctx.lineTo(10, -18);
+            this.ctx.lineTo(-20, -22);
+            this.ctx.lineTo(-12, -8);
+            this.ctx.lineTo(-24, 0);
+            this.ctx.lineTo(-12, 8);
+            this.ctx.lineTo(-20, 22);
+            this.ctx.lineTo(10, 18);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.beginPath();
+            this.ctx.arc(4, 0, 5, 0, Math.PI * 2);
+            this.ctx.fill();
+        } else if (this.selectedShipId === 'ship4') {
             // Supernova Dreadnought (Massive Quad-Wing Capital Hull)
             this.ctx.beginPath();
             this.ctx.moveTo(26, 0);
