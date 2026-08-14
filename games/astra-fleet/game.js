@@ -704,29 +704,35 @@ class SpaceCombatEngine {
                 const isEquipped = (this.selectedShipId === id);
 
                 const card = document.createElement('div');
-                card.className = `ship-card ${isEquipped ? 'equipped' : ''}`;
+                card.className = `ship-card ${isEquipped ? 'equipped' : ''} ${def.isSecret && !isPurchased ? 'secret-locked' : ''}`;
+                
+                let btnText = isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`);
+                if (def.isSecret && !isPurchased) {
+                    btnText = '🔒 CLASSIFIED (Defeat Secret Anomaly Dual Bosses to Unlock)';
+                }
+
                 card.innerHTML = `
                     <div class="ship-header">
                         <div>
-                            <div class="ship-name">${def.name}</div>
+                            <div class="ship-name" style="color: ${def.color};">${def.isSecret && !isPurchased ? '🔒 Classified Secret Warship' : def.name}</div>
                             <div class="ship-class">${def.class}</div>
                         </div>
-                        <div style="font-size: 28px;">${def.specialIcon}</div>
+                        <div style="font-size: 28px;">${def.isSecret && !isPurchased ? '🔒' : def.specialIcon}</div>
                     </div>
                     <div class="ship-stats-list">
                         <div class="ship-stat-row">
                             <span class="stat-label">Hull Strength:</span>
-                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${(def.hull / 300) * 100}%;"></div></div>
+                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.hull / 420) * 100)}%;"></div></div>
                             <strong>${def.hull} HP</strong>
                         </div>
                         <div class="ship-stat-row">
                             <span class="stat-label">Force Shield:</span>
-                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${(def.shield / 200) * 100}%; background: var(--neon-cyan);"></div></div>
+                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.shield / 320) * 100)}%; background: var(--neon-cyan);"></div></div>
                             <strong>${def.shield} Shield</strong>
                         </div>
                         <div class="ship-stat-row">
                             <span class="stat-label">Thruster Speed:</span>
-                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${(def.speed / 8) * 100}%; background: var(--amber-gold);"></div></div>
+                            <div class="stat-bar-small"><div class="stat-fill-small" style="width: ${Math.min(100, (def.speed / 6) * 100)}%; background: var(--amber-gold);"></div></div>
                             <strong>${def.speed} Mach</strong>
                         </div>
                         <div class="ship-stat-row">
@@ -735,12 +741,12 @@ class SpaceCombatEngine {
                         </div>
                     </div>
                     <button class="btn-primary-large btn-ship-action" data-id="${id}" style="width: 100%; margin-top: 10px;">
-                        ${isEquipped ? 'EQUIPPED ✓' : (isPurchased ? 'EQUIP SHIP' : `BUY SHIP (🪙 ${def.price} Ore)`)}
+                        ${btnText}
                     </button>
                 `;
 
                 const actionBtn = card.querySelector('.btn-ship-action');
-                actionBtn.disabled = isEquipped || (!isPurchased && this.credits < def.price);
+                actionBtn.disabled = isEquipped || (def.isSecret && !isPurchased) || (!isPurchased && this.credits < def.price);
 
                 actionBtn.onclick = () => {
                     if (isEquipped) return;
@@ -2151,20 +2157,67 @@ class SpaceCombatEngine {
         this.ctx.fillStyle = shipDef.color;
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 1.5;
+        this.ctx.shadowColor = shipDef.color;
+        this.ctx.shadowBlur = 12;
 
-        this.ctx.beginPath();
-        this.ctx.moveTo(22, 0);
-        this.ctx.lineTo(-18, -14);
-        this.ctx.lineTo(-10, 0);
-        this.ctx.lineTo(-18, 14);
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.stroke();
+        if (this.selectedShipId === 'ship_secret') {
+            // Celestial Ancient Warship (Glowing star-crown geometry)
+            this.ctx.beginPath();
+            this.ctx.moveTo(28, 0);
+            this.ctx.lineTo(10, -18);
+            this.ctx.lineTo(-20, -22);
+            this.ctx.lineTo(-12, -8);
+            this.ctx.lineTo(-24, 0);
+            this.ctx.lineTo(-12, 8);
+            this.ctx.lineTo(-20, 22);
+            this.ctx.lineTo(10, 18);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
 
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.beginPath();
-        this.ctx.arc(4, 0, 4, 0, Math.PI * 2);
-        this.ctx.fill();
+            // Celestial Core Glow
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.beginPath();
+            this.ctx.arc(4, 0, 5, 0, Math.PI * 2);
+            this.ctx.fill();
+        } else if (this.selectedShipId === 'ship4') {
+            // Supernova Dreadnought (Massive Quad-Wing Capital Hull)
+            this.ctx.beginPath();
+            this.ctx.moveTo(26, 0);
+            this.ctx.lineTo(-10, -24);
+            this.ctx.lineTo(-22, -18);
+            this.ctx.lineTo(-14, 0);
+            this.ctx.lineTo(-22, 18);
+            this.ctx.lineTo(-10, 24);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+        } else if (this.selectedShipId === 'ship3_5') {
+            // Eclipse Voidbringer (Diamond Void Wing)
+            this.ctx.beginPath();
+            this.ctx.moveTo(24, 0);
+            this.ctx.lineTo(-8, -16);
+            this.ctx.lineTo(-20, 0);
+            this.ctx.lineTo(-8, 16);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+        } else {
+            // Standard Warships Geometry
+            this.ctx.beginPath();
+            this.ctx.moveTo(22, 0);
+            this.ctx.lineTo(-18, -14);
+            this.ctx.lineTo(-10, 0);
+            this.ctx.lineTo(-18, 14);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.beginPath();
+            this.ctx.arc(4, 0, 4, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
 
         this.ctx.restore();
     }
