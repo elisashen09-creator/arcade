@@ -932,7 +932,7 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = (this.difficulty === 'mission' ? 10 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
+            const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
             const bossCount = 1;
             this.levelTargetKills = bossCount + escortCount;
             document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan (Level 5 Final Boss)' : 'Boss'} & Destroy All ${escortCount} Escorts`;
@@ -1164,21 +1164,26 @@ class SpaceCombatEngine {
             if (b === 0) this.bossEntity = bEntity;
         }
 
-        // Spawn Escort Fleet alongside boss
-        const escortCount = (this.difficulty === 'mission' ? 10 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
+        // Spawn Escort Fleet alongside boss (30 Escort Ships for The Final Mission!)
+        const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
+        const cols = 10;
         for (let i = 0; i < escortCount; i++) {
-            const offsetX = (i - (escortCount - 1) / 2) * 85;
-            const eType = i % 3 === 0 ? 'cruiser' : (i % 2 === 0 ? 'frigate' : 'interceptor');
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const offsetX = (col - (cols - 1) / 2) * 65;
+            const offsetY = -40 - (row * 40);
+
+            const eType = i % 4 === 0 ? 'cruiser' : (i % 3 === 0 ? 'frigate' : (i % 2 === 0 ? 'bomber' : 'interceptor'));
             this.enemies.push({
                 id: Math.random(),
                 type: eType,
                 x: this.width / 2 + offsetX,
-                y: -60 - (i % 2 === 0 ? 0 : 35),
+                y: offsetY,
                 vx: 0, vy: 1.2,
-                radius: eType === 'cruiser' ? 34 : (eType === 'frigate' ? 28 : 20),
+                radius: eType === 'cruiser' ? 34 : (eType === 'frigate' ? 28 : (eType === 'bomber' ? 22 : 20)),
                 health: 250, maxHealth: 250,
                 shield: 120, maxShield: 120, speed: 1.4,
-                color: eType === 'cruiser' ? '#ff0055' : (eType === 'frigate' ? '#00f0ff' : '#9d00ff'),
+                color: eType === 'cruiser' ? '#ff0055' : (eType === 'frigate' ? '#00f0ff' : (eType === 'bomber' ? '#ff3300' : '#9d00ff')),
                 fireTimer: Math.random() * 2,
                 fireInterval: 2.8, damage: 32
             });
