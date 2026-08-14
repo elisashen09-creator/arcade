@@ -1032,6 +1032,10 @@ class SpaceCombatEngine {
         const isDualBoss = (levelNumber === 15 || levelNumber === 30);
         const bossCount = isDualBoss ? 2 : 1;
 
+        if (isDualBoss) {
+            baseHp = 32000; // Dual bosses have exactly 32,000 HP each!
+        }
+
         for (let b = 0; b < bossCount; b++) {
             const spawnX = bossCount === 1 ? this.width / 2 : (b === 0 ? this.width * 0.32 : this.width * 0.68);
             const targetY = bossCount === 1 ? 180 : (b === 0 ? 170 : 210);
