@@ -21,6 +21,13 @@ class SpaceCombatEngine {
         this.purchasedShips = JSON.parse(localStorage.getItem('astra_purchased_ships') || JSON.stringify(['ship1']));
         this.selectedShipId = localStorage.getItem('astra_selected_ship') || 'ship1';
 
+        // Unlock all ships & grant ore credits on local server!
+        const isLocalServer = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        if (isLocalServer) {
+            this.purchasedShips = ['ship1', 'ship1_5', 'ship2', 'ship2_5', 'ship3', 'ship3_5', 'ship4', 'ship_mission_reward'];
+            this.credits = Math.max(this.credits, 999999);
+        }
+
         this.missionNames = {
             1: "OUTER RIM PERIMETER",
             2: "ASTEROID MINING BELT",
