@@ -1274,7 +1274,7 @@ class SpaceCombatEngine {
         // Periodic Side-Spawning Shotgun Ship in Impossible Mode!
         if (this.difficulty === 'impossible' && this.isRunning && !this.isPaused) {
             this.shotgunSpawnTimer = (this.shotgunSpawnTimer || 0) + dt;
-            if (this.shotgunSpawnTimer >= 6.0) { // Every 6 seconds over time!
+            if (this.shotgunSpawnTimer >= 12.0) { // Every 12 seconds over time!
                 this.shotgunSpawnTimer = 0;
 
                 const spawnFromLeft = Math.random() < 0.5;
