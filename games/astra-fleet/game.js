@@ -115,9 +115,9 @@ class SpaceCombatEngine {
                 damage: 55,
                 fireRateDelay: 0.68,
                 specialName: 'BARRIER FIELD',
-                specialSub: '4s Invulnerability',
+                specialSub: '4s 80% Damage Reduction',
                 specialIcon: '🛡️',
-                specialCdMax: 12.0,
+                specialCdMax: 14.0,
                 color: '#9d00ff'
             },
             ship2_5: {
@@ -1217,11 +1217,16 @@ class SpaceCombatEngine {
 
     // --- CONTROLS & SPECIAL ABILITIES ---
     triggerSpecialAbility() {
-        if (!this.isRunning || this.player.specialCdTimer > 0) return;
-
         const shipDef = this.shipDefinitions[this.selectedShipId] || this.shipDefinitions.ship1;
-        const cdMultiplier = 1 - (this.upgrades.cooldown * 0.15);
-        this.player.specialCdTimer = shipDef.specialCdMax * cdMultiplier;
+        const cdMultiplier = Math.max(0.50, 1 - (this.upgrades.cooldown * 0.10));
+        let actualCd = shipDef.specialCdMax * cdMultiplier;
+
+        // Ensure Aegis Sentinel (ship2) cannot have permanent 100% barrier uptime even with max cooldown upgrade
+        if (this.selectedShipId === 'ship2') {
+            actualCd = Math.max(8.5, actualCd); // Guarantees 4.5s cooldown window after 4s barrier ends!
+        }
+
+        this.player.specialCdTimer = actualCd;
 
         window.soundSynth.playSpecialAbility();
 
@@ -1243,11 +1248,11 @@ class SpaceCombatEngine {
             }
             this.logTerminal('[ABILITY] Launched Triple Photon Torpedo Salvo!', 'agent');
         } else if (this.selectedShipId === 'ship2') {
-            // Aegis Barrier Field (Invulnerability for 4s)
+            // Aegis Barrier Field (80% Damage Reduction for 4s)
             this.player.invulnerableTimer = 4.0;
-            this.player.shield = this.player.maxShield;
+            this.player.shield = Math.min(this.player.maxShield, this.player.shield + (this.player.maxShield * 0.35));
             this.triggerScreenShake(8, 0.3);
-            this.logTerminal('[ABILITY] Aegis Invulnerability Barrier Field Activated!', 'agent');
+            this.logTerminal('[ABILITY] Aegis 80% Damage Reduction Barrier Activated!', 'agent');
         } else if (this.selectedShipId === 'ship3') {
             // EMP Shockwave
             const shockRadius = 320;
@@ -1844,7 +1849,10 @@ class SpaceCombatEngine {
     }
 
     takePlayerDamage(amount) {
-        if (this.player.invulnerableTimer > 0) return;
+        if (this.player.invulnerableTimer > 0) {
+            amount *= 0.20; // 80% Damage Reduction Barrier (Only 20% damage passes through!)
+            this.addDamageText(this.player.x, this.player.y, 'BARRIER -80%', '#00ffcc');
+        }
 
         this.player.lastDamageTime = performance.now();
         this.triggerScreenShake(6, 0.2);
