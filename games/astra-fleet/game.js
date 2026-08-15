@@ -1217,6 +1217,8 @@ class SpaceCombatEngine {
 
     // --- CONTROLS & SPECIAL ABILITIES ---
     triggerSpecialAbility() {
+        if (!this.isRunning || this.player.specialCdTimer > 0) return;
+
         const shipDef = this.shipDefinitions[this.selectedShipId] || this.shipDefinitions.ship1;
         const cdMultiplier = Math.max(0.50, 1 - (this.upgrades.cooldown * 0.10));
         let actualCd = shipDef.specialCdMax * cdMultiplier;
