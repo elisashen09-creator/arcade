@@ -1250,9 +1250,8 @@ class SpaceCombatEngine {
             }
             this.logTerminal('[ABILITY] Launched Triple Photon Torpedo Salvo!', 'agent');
         } else if (this.selectedShipId === 'ship2') {
-            // Aegis Barrier Field (80% Damage Reduction for 4s)
+            // Aegis Barrier Field (80% Damage Reduction for 4s, no shield recharge)
             this.player.invulnerableTimer = 4.0;
-            this.player.shield = Math.min(this.player.maxShield, this.player.shield + (this.player.maxShield * 0.35));
             this.triggerScreenShake(8, 0.3);
             this.logTerminal('[ABILITY] Aegis 80% Damage Reduction Barrier Activated!', 'agent');
         } else if (this.selectedShipId === 'ship3') {
