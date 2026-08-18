@@ -932,18 +932,19 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = this.getBossEscortCount(levelNumber);
             const bossCount = (this.difficulty !== 'mission' && (levelNumber === 15 || levelNumber === 30)) ? 2 : 1;
+            const escortCount = Math.min(100 - bossCount, this.getBossEscortCount(levelNumber));
             this.levelTargetKills = bossCount + escortCount;
             document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan (Level 5 Final Boss)' : (bossCount > 1 ? 'Dual Dreadnought Bosses' : 'Boss')} & Destroy All ${escortCount} Escorts`;
             this.spawnBoss(levelNumber);
         } else {
-            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : (levelNumber === 2 ? 40 : (levelNumber === 3 ? 50 : 60))) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
+            let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : (levelNumber === 2 ? 45 : (levelNumber === 3 ? 60 : (levelNumber === 4 ? 80 : 100)))) : Math.min(100, 10 + Math.floor(levelNumber * 3)));
             if (this.difficulty === 'impossible') {
                 totalEnemies = Math.floor(totalEnemies * 2.5); // 150% more ships on Impossible!
             } else if (this.difficulty === 'hard') {
                 totalEnemies = Math.floor(totalEnemies * 1.8);
             }
+            totalEnemies = Math.min(100, totalEnemies); // Maximum 100 ships allowed in any level!
             this.levelTargetKills = totalEnemies;
             const diffTag = this.difficulty === 'mission' ? '(🌟 THE FINAL MISSION)' : (this.difficulty === 'impossible' ? '(☠️ IMPOSSIBLE MODE)' : (this.difficulty === 'hard' ? '(🔥 HARD MODE)' : ''));
             document.getElementById('obj-text').innerText = `TARGET: Destroy All ${totalEnemies} Hostile Ships ${diffTag}`;
@@ -1069,17 +1070,19 @@ class SpaceCombatEngine {
     getBossEscortCount(levelNumber) {
         if (this.difficulty === 'mission') return 30;
         if (this.difficulty === 'impossible') {
-            if (levelNumber >= 24) return 30;
-            if (levelNumber >= 15) return 24;
-            if (levelNumber >= 9) return 18;
-            return 12;
+            if (levelNumber >= 24) return 99; // 99 escorts + 1 boss = 100 ships max!
+            if (levelNumber >= 18) return 80;
+            if (levelNumber >= 12) return 60;
+            if (levelNumber >= 6) return 40;
+            return 25;
         }
         if (this.difficulty === 'hard') {
-            if (levelNumber >= 20) return 16;
-            if (levelNumber >= 10) return 12;
-            return 8;
+            if (levelNumber >= 25) return 60;
+            if (levelNumber >= 15) return 40;
+            if (levelNumber >= 10) return 25;
+            return 15;
         }
-        return levelNumber >= 15 ? 10 : 6;
+        return levelNumber >= 20 ? 30 : (levelNumber >= 10 ? 20 : 10);
     }
 
     spawnBoss(levelNumber) {
