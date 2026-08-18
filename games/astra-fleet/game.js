@@ -932,10 +932,10 @@ class SpaceCombatEngine {
         }
 
         if (isBossLevel) {
-            const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
-            const bossCount = 1;
+            const escortCount = this.getBossEscortCount(levelNumber);
+            const bossCount = (this.difficulty !== 'mission' && (levelNumber === 15 || levelNumber === 30)) ? 2 : 1;
             this.levelTargetKills = bossCount + escortCount;
-            document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan (Level 5 Final Boss)' : 'Boss'} & Destroy All ${escortCount} Escorts`;
+            document.getElementById('obj-text').innerText = `TARGET: Defeat ${this.difficulty === 'mission' ? 'Omega Citadel War-Titan (Level 5 Final Boss)' : (bossCount > 1 ? 'Dual Dreadnought Bosses' : 'Boss')} & Destroy All ${escortCount} Escorts`;
             this.spawnBoss(levelNumber);
         } else {
             let totalEnemies = (this.difficulty === 'mission' ? (levelNumber === 1 ? 30 : (levelNumber === 2 ? 40 : (levelNumber === 3 ? 50 : 60))) : Math.min(60, 8 + Math.floor(levelNumber * 2.5)));
@@ -1066,6 +1066,22 @@ class SpaceCombatEngine {
         }
     }
 
+    getBossEscortCount(levelNumber) {
+        if (this.difficulty === 'mission') return 30;
+        if (this.difficulty === 'impossible') {
+            if (levelNumber >= 24) return 30;
+            if (levelNumber >= 15) return 24;
+            if (levelNumber >= 9) return 18;
+            return 12;
+        }
+        if (this.difficulty === 'hard') {
+            if (levelNumber >= 20) return 16;
+            if (levelNumber >= 10) return 12;
+            return 8;
+        }
+        return levelNumber >= 15 ? 10 : 6;
+    }
+
     spawnBoss(levelNumber) {
         window.soundSynth.playBossWarning();
         this.triggerScreenShake(24, 0.8);
@@ -1164,8 +1180,8 @@ class SpaceCombatEngine {
             if (b === 0) this.bossEntity = bEntity;
         }
 
-        // Spawn Escort Fleet alongside boss (30 Escort Ships - strongest Cruiser class with doubled HP & Shield!)
-        const escortCount = (this.difficulty === 'mission' ? 30 : (levelNumber >= 15 ? 6 : (levelNumber >= 10 ? 4 : 2)));
+        // Spawn Escort Fleet alongside boss (12-30 Heavy Cruiser Escort Ships for Impossible Mode!)
+        const escortCount = this.getBossEscortCount(levelNumber);
         for (let i = 0; i < escortCount; i++) {
             let spawnX, spawnY;
             if (Math.random() < 0.5) {
