@@ -197,20 +197,20 @@ class SpaceCombatEngine {
             ship_mission_reward: {
                 id: 'ship_mission_reward',
                 name: 'Astra Sovereign Vanguard',
-                class: 'GODLIKE OMEGA WARSHIP',
+                class: 'GOLDEN OMEGA WARSHIP',
                 price: 0,
                 isMissionReward: true,
-                speed: 8.5,
-                hull: 10000,
-                shield: 5000,
-                shieldRegen: 25.00,
-                hullRegen: 10.00,
-                damage: 1000,
-                fireRateDelay: 0.03,
-                specialName: 'GODLIKE OMEGA BEAM',
-                specialSub: '12-Ray Continuous Annihilation',
-                specialIcon: '👑',
-                specialCdMax: 1.0,
+                speed: 5.5,
+                hull: 450,
+                shield: 350,
+                shieldRegen: 0.28,
+                hullRegen: 0.08,
+                damage: 120,
+                fireRateDelay: 0.24,
+                specialName: 'TRIPLE BEAM SWEEP',
+                specialSub: 'Continuous Triple Laser',
+                specialIcon: '⚡',
+                specialCdMax: 8.0,
                 color: '#ffb700'
             }
         };
@@ -1494,25 +1494,24 @@ class SpaceCombatEngine {
         // Auto Firing Primary Cannon (Continuous Autofire)
         this.firePlayerCannon();
 
-        // Devastator Beam & Godlike Omega 12-Ray Beam Damage
+        // Devastator Beam & Triple Laser Beam Damage
         if (this.player.beamActiveTimer > 0) {
             const angle = this.player.angle;
-            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? 
-                [-0.55, -0.45, -0.35, -0.25, -0.15, -0.05, 0.05, 0.15, 0.25, 0.35, 0.45, 0.55].map(offset => angle + offset) : [angle];
-            const tickDmg = (this.selectedShipId === 'ship_mission_reward') ? 250 : 12;
+            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? [angle - 0.16, angle, angle + 0.16] : [angle];
+            const tickDmg = (this.selectedShipId === 'ship_mission_reward') ? 9 : 12;
 
             this.enemies.forEach(enemy => {
                 const enemyAngle = Math.atan2(enemy.y - this.player.y, enemy.x - this.player.x);
                 beamAngles.forEach(bAngle => {
                     let diff = Math.abs(bAngle - enemyAngle);
                     if (diff > Math.PI) diff = Math.PI * 2 - diff;
-                    if (diff < 0.25) {
+                    if (diff < 0.18) {
                         if (enemy.shield && enemy.shield > 0) {
                             enemy.shield -= tickDmg;
                         } else {
                             enemy.health -= tickDmg;
                         }
-                        this.addDamageText(enemy.x, enemy.y, `-${tickDmg}`, '#ffb700');
+                        this.addDamageText(enemy.x, enemy.y, `-${tickDmg}`, '#00ffff');
                     }
                 });
             });
@@ -1872,10 +1871,7 @@ class SpaceCombatEngine {
     }
 
     takePlayerDamage(amount) {
-        if (this.selectedShipId === 'ship_mission_reward') {
-            amount *= 0.05; // Permanent 95% Godmode Armor Reduction!
-            this.addDamageText(this.player.x, this.player.y, 'GODMODE -95%', '#ffb700');
-        } else if (this.player.invulnerableTimer > 0) {
+        if (this.player.invulnerableTimer > 0) {
             amount *= 0.20; // 80% Damage Reduction Barrier (Only 20% damage passes through!)
             this.addDamageText(this.player.x, this.player.y, 'BARRIER -80%', '#00ffcc');
         }
@@ -1920,13 +1916,11 @@ class SpaceCombatEngine {
             const speed = 8.5;
 
             if (this.selectedShipId === 'ship_mission_reward') {
-                // Utterly Overpowered 9-Shot Godmode Gatling Storm
-                for (let a = -4; a <= 4; a++) {
-                    const salvoAngle = this.player.angle + (a * 0.10);
+                for (let a = -1; a <= 1; a++) {
                     this.projectiles.push({
-                        x: this.player.x + (a * 6), y: this.player.y,
-                        vx: Math.cos(salvoAngle) * speed * 2.4, vy: Math.sin(salvoAngle) * speed * 2.4,
-                        damage: damage, color: a % 3 === 0 ? '#ffb700' : (a % 2 === 0 ? '#00ffff' : '#ffffff'), radius: 8
+                        x: this.player.x + (a * 14), y: this.player.y,
+                        vx: Math.cos(this.player.angle) * speed * 1.25, vy: Math.sin(this.player.angle) * speed * 1.25,
+                        damage: damage * 0.8, color: '#ffb700', radius: 5
                     });
                 }
             } else if (this.selectedShipId === 'ship4') {
@@ -2172,20 +2166,17 @@ class SpaceCombatEngine {
 
         if (this.player.beamActiveTimer > 0) {
             this.ctx.save();
-            const offsets = [-0.55, -0.45, -0.35, -0.25, -0.15, -0.05, 0.05, 0.15, 0.25, 0.35, 0.45, 0.55];
-            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? 
-                offsets.map(off => this.player.angle + off) : [this.player.angle];
-            const colors = (this.selectedShipId === 'ship_mission_reward') ? 
-                ['#00ffff', '#ffb700', '#ffffff', '#ff0055', '#00ffff', '#ffb700', '#ffb700', '#00ffff', '#ff0055', '#ffffff', '#ffb700', '#00ffff'] : ['#ffb700'];
+            const beamAngles = (this.selectedShipId === 'ship_mission_reward') ? [this.player.angle - 0.16, this.player.angle, this.player.angle + 0.16] : [this.player.angle];
+            const colors = (this.selectedShipId === 'ship_mission_reward') ? ['#00ffff', '#ffb700', '#00ffff'] : ['#ffb700'];
 
             beamAngles.forEach((bAngle, idx) => {
                 this.ctx.strokeStyle = colors[idx] || '#00ffff';
-                this.ctx.lineWidth = (this.selectedShipId === 'ship_mission_reward') ? 12 : 14;
+                this.ctx.lineWidth = (this.selectedShipId === 'ship_mission_reward') ? 8 : 14;
                 this.ctx.shadowColor = colors[idx] || '#ff0055';
-                this.ctx.shadowBlur = 30;
+                this.ctx.shadowBlur = 20;
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.player.x, this.player.y);
-                this.ctx.lineTo(this.player.x + Math.cos(bAngle) * 1600, this.player.y + Math.sin(bAngle) * 1600);
+                this.ctx.lineTo(this.player.x + Math.cos(bAngle) * 1200, this.player.y + Math.sin(bAngle) * 1200);
                 this.ctx.stroke();
             });
             this.ctx.restore();
