@@ -26,6 +26,8 @@ class SpaceCombatEngine {
         if (isLocalServer) {
             this.purchasedShips = ['ship1', 'ship1_5', 'ship2', 'ship2_5', 'ship3', 'ship3_5', 'ship4', 'ship_mission_reward'];
             this.credits = Math.max(this.credits, 999999);
+            localStorage.setItem('astra_purchased_ships', JSON.stringify(this.purchasedShips));
+            localStorage.setItem('astra_credits', this.credits.toString());
         }
 
         this.missionNames = {
